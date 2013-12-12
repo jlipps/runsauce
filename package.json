@@ -31,18 +31,19 @@
     "test": "./test"
   },
   "dependencies": {
-    "underscore": "~1.5.2"
+    "underscore": "~1.5.2",
+    "wd": "~0.2.6",
+    "yiewd": "~0.1.0",
+    "monocle-js": "~0.3.0",
+    "saucelabs": "~0.1.1",
+    "argparse": "~0.1.15"
   },
   "scripts": {
     "test": "mocha test/"
   },
   "devDependencies": {
     "mocha": "~1.15.1",
-    "should": "~2.1.1",
-    "wd": "~0.2.6",
-    "yiewd": "~0.1.0",
-    "monocle-js": "~0.3.0",
-    "saucelabs": "~0.1.1"
+    "should": "~2.1.1"
   }
 }
 
