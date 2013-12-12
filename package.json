@@ -1,0 +1,48 @@
+{
+  "name": "runsauce",
+  "description": "Run a simple test on Sauce Labs",
+  "tags": [
+    "automation",
+    "javascript",
+    "selenium",
+    "webdriver",
+    "ios",
+    "android",
+    "firefoxos",
+    "testing"
+  ],
+  "version": "0.0.1",
+  "author": "jlipps@gmail.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jlipps/runsauce.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jlipps/runsauce/issues"
+  },
+  "engines": [
+    "node"
+  ],
+  "main": "./lib/main.js",
+  "bin": {
+  },
+  "directories": {
+    "lib": "./lib",
+    "test": "./test"
+  },
+  "dependencies": {
+    "underscore": "~1.5.2"
+  },
+  "scripts": {
+    "test": "mocha test/"
+  },
+  "devDependencies": {
+    "mocha": "~1.15.1",
+    "should": "~2.1.1",
+    "wd": "~0.2.6",
+    "yiewd": "~0.1.0",
+    "monocle-js": "~0.3.0",
+    "saucelabs": "~0.1.1"
+  }
+}
+
