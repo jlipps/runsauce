@@ -1,3 +1,4 @@
+#!/usr/bin/env node --harmony
 "use strict";
 
 var runner = require('../lib/runner.js')
