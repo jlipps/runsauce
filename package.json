@@ -35,7 +35,7 @@
     "yiewd": "~0.1.2",
     "monocle-js": "~0.3.0",
     "saucelabs": "~0.1.1",
-    "argparse": "~0.1.15"
+    "optimist": "~0.6.0"
   },
   "scripts": {
     "test": "mocha test/"
