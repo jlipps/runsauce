@@ -34,8 +34,10 @@
     "underscore": "~1.5.2",
     "yiewd": "~0.1.2",
     "monocle-js": "~0.3.0",
+    "monocle-fs": "~0.0.5",
     "saucelabs": "~0.1.1",
-    "optimist": "~0.6.0"
+    "optimist": "~0.6.0",
+    "prompt": "~0.2.12"
   },
   "scripts": {
     "test": "mocha test/"
