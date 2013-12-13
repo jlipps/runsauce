@@ -25,3 +25,4 @@ runsauce --shortcuts
 # do something craaazy, like run a test against a self-signed https cert
 # on a dev server in Mac OS X 10.9 with Safari 7
 runsauce -c dev -t selfsigned -p m9 -b s -v 7
+```
