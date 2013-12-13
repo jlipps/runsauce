@@ -23,8 +23,9 @@
   "engines": [
     "node"
   ],
-  "main": "./lib/main.js",
+  "main": "./bin/runsauce.js",
   "bin": {
+    "runsauce": "./bin/runsauce.js"
   },
   "directories": {
     "lib": "./lib",
@@ -32,7 +33,7 @@
   },
   "dependencies": {
     "underscore": "~1.5.2",
-    "yiewd": "~0.1.2",
+    "yiewd": "~0.1.3",
     "monocle-js": "~0.3.0",
     "monocle-fs": "~0.0.5",
     "saucelabs": "~0.1.1",

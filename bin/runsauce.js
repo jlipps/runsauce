@@ -1,9 +1,9 @@
 "use strict";
 
-var runner = require('./runner.js')
+var runner = require('../lib/runner.js')
   , _ = require('underscore')
-  , opts = require('./parser.js')()
-  , setup = require('./setup.js')
+  , opts = require('../lib/parser.js')()
+  , setup = require('../lib/setup.js')
   , monocle = require('monocle-js');
 
 if (module === require.main) {
@@ -34,5 +34,6 @@ if (module === require.main) {
     });
   });
 }
+
 
 
