@@ -2,8 +2,7 @@ RunSauce
 ========
 
 Run many kinds of simple tests with any [Sauce Labs](https://saucelabs.com)
-options. Requires Node &gt;= 0.11.3 (for generator support). Don't be afraid to
-build from source!
+options.
 
 This is probably mostly useful for people who work at
 [Sauce](https://github.com/saucelabs).
@@ -25,4 +24,15 @@ runsauce --shortcuts
 # do something craaazy, like run a test against a self-signed https cert
 # on a dev server in Mac OS X 10.9 with Safari 7
 runsauce -c dev -t selfsigned -p m9 -b s -v 7
+```
+
+Build from source:
+
+```bash
+git clone https://github.com/jlipps/runsauce.git
+cd runsauce
+./build.sh
+
+# test it out, in ES5 or ES6 w/ native generator support
+./bin/runsauce
 ```
