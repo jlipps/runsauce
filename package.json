@@ -11,7 +11,7 @@
     "firefoxos",
     "testing"
   ],
-  "version": "0.0.5",
+  "version": "0.1.0",
   "author": "jlipps@gmail.com",
   "repository": {
     "type": "git",
@@ -33,8 +33,8 @@
   },
   "dependencies": {
     "underscore": "~1.5.2",
-    "yiewd": "~0.1.3",
-    "monocle-js": "~0.3.0",
+    "yiewd": "~0.2.0",
+    "monocle-js": "~0.4.0",
     "monocle-fs": "~0.0.5",
     "saucelabs": "~0.1.1",
     "optimist": "~0.6.0",
@@ -45,7 +45,8 @@
     "test": "mocha test/"
   },
   "devDependencies": {
-    "mocha": "~1.15.1"
+    "mocha": "~1.15.1",
+    "regenerator": "0.3.3"
   }
 }
 
