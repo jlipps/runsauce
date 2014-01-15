@@ -36,3 +36,7 @@ cd runsauce
 # test it out, in ES5 or ES6 w/ native generator support
 ./bin/runsauce
 ```
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/jlipps/runsauce/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
