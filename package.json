@@ -11,7 +11,7 @@
     "firefoxos",
     "testing"
   ],
-  "version": "0.3.2",
+  "version": "0.4.4",
   "author": "jlipps@gmail.com",
   "repository": {
     "type": "git",
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "underscore": "~1.5.2",
-    "yiewd": "~0.2.0",
+    "yiewd": "~0.3.0",
     "monocle-js": "~0.5.0",
     "monocle-fs": "~0.0.6",
     "monocle-request": "0.0.4",
