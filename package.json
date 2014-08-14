@@ -47,6 +47,6 @@
   },
   "devDependencies": {
     "mocha": "~1.15.1",
-    "regenerator": "0.4.2"
+    "regenerator": "0.4.12"
   }
 }
