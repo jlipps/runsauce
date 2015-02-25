@@ -178,7 +178,7 @@ function fixAppiumCaps (testSpec, caps, onSauce) {
 
 export async function runTest (testSpec, opts, multiRun) {
   let start = Date.now();
-  let result = {};
+  let result = {caps: testSpec.caps, test: testSpec.testName};
   let driver;
   let log = msg => {
     if (!multiRun) console.log(msg);
@@ -290,8 +290,13 @@ export async function runTestSet (testSpecs, opts) {
             // unexpected errors and update the results array
             testsInProgress[slot].nodeify((err, res) => {
               if (err) {
-                console.log("Got error running test: " + err.message);
-                console.log(err);
+                if (!res || !res.stack) {
+                  res = res || {};
+                  res.stack = err.stack;
+                }
+                if (multiRun) {
+                  process.stdout.write('E');
+                }
               }
               testsInProgress[slot] = null;
               results.push(res);
@@ -320,6 +325,7 @@ export async function run (opts) {
     let testSpec = {};
     let runs = optSpec.runs || 1;
     testSpec.test = getTestByType(optSpec.test);
+    testSpec.testName = optSpec.test;
     optSpec.onSauce = onSauce && optSpec.test !== 'js';
     testSpec.caps = getCaps(optSpec);
     testSpec.onSauce = optSpec.onSauce;
@@ -333,7 +339,7 @@ export async function run (opts) {
   const pStr = opts.processes + " process" + (opts.processes !== 1 ? "es": "");
   console.log("Running " + testStr + " in up to " + pStr + " against " +
               opts.configName + " with " + numCaps + " sets of caps");
-  if (opts.verbose) {
+  if (opts.verbose || numTests === 1) {
     console.log(util.inspect(_.pluck(testSpecs, 'caps')));
   }
   let results = await runTestSet(testSpecs, opts);
@@ -364,6 +370,9 @@ export async function run (opts) {
         if (res.sessionId) {
           console.log("https://saucelabs.com/tests/" + res.sessionId);
         }
+        console.log("----------------");
+        console.log("TEST: " + res.test);
+        console.log("CAPS: " + util.inspect(res.caps));
         console.log("----------------");
         console.log(res.stack);
       }

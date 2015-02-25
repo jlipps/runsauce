@@ -247,7 +247,11 @@ function mapArgs (args) {
       continue;
     }
     if (shortcutMap) {
-      args[name] = shortcutMap[args[shortcut].toLowerCase()] || args[shortcut];
+      if (args[shortcut] instanceof Array) {
+        args[name] = args[shortcut].map(v => shortcutMap[v.toLowerCase()] || v);
+      } else {
+        args[name] = shortcutMap[args[shortcut].toLowerCase()] || args[shortcut];
+      }
     } else {
       args[name] = args[shortcut];
     }
@@ -256,4 +260,52 @@ function mapArgs (args) {
   return args;
 }
 
-export { testsMap, mapArgs };
+function prepareTestSet (opts, tests = null) {
+  if (tests === null) {
+    // if we have just one test, its info is in 'opts', so get it into a
+    // single test array
+    let testArgs = ['browser', 'platform', 'device', 'framework',
+                    'backendVersion', 'orientation', 'version',
+                    'localname', 'wait', 'test'];
+    let singleTest = {};
+    for (let testArg of testArgs) {
+      if (_.has(opts, testArg)) {
+        singleTest[testArg] = opts[testArg];
+        delete opts[testArg];
+      }
+    }
+    tests = [singleTest];
+  }
+
+  // now our keys can be arrays so we need to find all combinations of
+  // platforms
+  let combiningKeys = ['browser', 'platform', 'device', 'backendVersion',
+                       'orientation', 'version', 'test'];
+  for (let k of combiningKeys) {
+    for (let t of tests) {
+      if (t[k] instanceof Array) {
+        if (t[k].length === 0) {
+          throw new Error("Invalid empty array value for test option");
+        }
+        // get all our options, the first in a variable and the rest in a list
+        let [firstOpt, rest] = [t[k][0], t[k].slice(1)];
+
+        // now update the test we have a reference for with the first value...
+        t[k] = firstOpt;
+        for (let otherOpt of rest) {
+          // ... creating new tests for the other values
+          let newT = _.clone(t);
+          newT[k] = otherOpt;
+          tests.push(newT);
+        }
+      }
+    }
+    // now our tests array has been updated with new tests, so on the next
+    // iteration, other keys can be expanded and will combine with the
+    // already-expanded set from this iteration
+  }
+  opts.tests = tests;
+  return tests;
+}
+
+export { prepareTestSet, testsMap, mapArgs };

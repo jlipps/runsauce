@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import path from 'path';
-import { parse as parseOpts, testsMap, mapArgs } from './parser';
+import { parse as parseOpts, testsMap, mapArgs,
+         prepareTestSet } from './parser';
 import { run } from './runner';
 import { interactiveSetup, getConfig } from './setup';
 
@@ -12,6 +13,7 @@ function exit (msg, code = 1) {
 }
 
 async function main () {
+  let testfile, tests = null;
   if (_.has(opts, 'setup') && opts.setup) {
     await interactiveSetup();
     process.exit(0);
@@ -20,7 +22,6 @@ async function main () {
   if (config === null) {
     exit("Could not load config file, please run with --setup");
   }
-  let testfile;
   if (opts.testfile) {
     try {
       testfile = require(path.resolve(process.cwd(), opts.testfile));
@@ -32,20 +33,9 @@ async function main () {
     }
     opts.config = opts.config || testfile.c || testfile.config;
     opts.processes = testfile.n || testfile.processes || opts.processes;
-    opts.tests = testfile.tests.map(t => mapArgs(t));
-  } else {
-    let testArgs = ['browser', 'platform', 'device', 'framework',
-                    'backendVersion', 'orientation', 'version',
-                    'localname', 'wait', 'test'];
-    let singleTest = {};
-    for (let testArg of testArgs) {
-      if (_.has(opts, testArg)) {
-        singleTest[testArg] = opts[testArg];
-        delete opts[testArg];
-      }
-    }
-    opts.tests = [singleTest];
+    tests = testfile.tests.map(t => mapArgs(t));
   }
+  prepareTestSet(opts, tests);
   if (!_.has(config, opts.config)) {
     exit("Config " + opts.config + " doesn't exist");
   }
@@ -68,5 +58,4 @@ export function runsauce () {
     process.exit(1);
   });
 }
-
 
