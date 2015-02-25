@@ -182,11 +182,21 @@ export function parse () {
       describe: 'Show all the shortcuts',
       demand: false
     })
+    .options('i', {
+      alias: 'testfile',
+      describe: 'JSON file containing run specs',
+      demand: false
+    })
     .options('tests', {
       describe: 'Show all the test types',
       demand: false
     })
-    .boolean(['setup', 'wait', 'help', 'shortcuts', 'tests']);
+    .options('z', {
+      alias: 'verbose',
+      describe: 'Show more logging',
+      demand: false
+    })
+    .boolean(['setup', 'wait', 'help', 'shortcuts', 'tests', 'verbose']);
 
 
   let args = optimistObj.argv;
@@ -208,27 +218,42 @@ export function parse () {
     process.exit(0);
   }
 
-  // allow browser shortcuts
-  args.browser = (browserMap[args.b.toLowerCase()] || args.b);
-
-  // allow platform shortcuts
-  args.platform = (platformMap[args.p.toLowerCase()] || args.p);
-
-  if (args.d) {
-    // allow device shortcuts
-    args.device = (deviceMap[args.d.toLowerCase()] || args.d);
-  }
-
-  if (args.f) {
-    // allow framework shortcuts
-    args.framework = (testFrameworkMap[args.f.toLowerCase()] || args.f);
-  }
-
-  if (args.o) {
-    args.orientation = orientationMap[args.o.toLowerCase()] || args.o;
-  }
+  mapArgs(args);
 
   return args;
 }
 
-export { testsMap };
+function mapArgs (args) {
+  const optMap = {
+    b: ['browser', browserMap],
+    p: ['platform', platformMap],
+    d: ['device', deviceMap],
+    f: ['framework', testFrameworkMap],
+    a: 'backendVersion',
+    o: 'orientation',
+    v: 'version',
+    l: 'localname',
+    w: 'wait',
+    t: 'test',
+    r: 'runs',
+  };
+  for (let [shortcut, nameSet] of _.pairs(optMap)) {
+    let name = nameSet;
+    let shortcutMap;
+    if (nameSet instanceof Array) {
+      [name, shortcutMap] = nameSet;
+    }
+    if (args.name || !args[shortcut]) {
+      continue;
+    }
+    if (shortcutMap) {
+      args[name] = shortcutMap[args[shortcut].toLowerCase()] || args[shortcut];
+    } else {
+      args[name] = args[shortcut];
+    }
+    delete args[shortcut];
+  }
+  return args;
+}
+
+export { testsMap, mapArgs };

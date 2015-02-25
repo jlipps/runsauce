@@ -4,6 +4,7 @@ import Q from 'q';
 import yiewd from 'yiewd';
 import { sleep } from 'asyncbox';
 import { tests } from './tests';
+import { testsMap } from './parser';
 
 const APPS = {
   'iOS7': 'http://appium.s3.amazonaws.com/TestApp7.0.app.zip',
@@ -36,17 +37,31 @@ function getTestByType (testType) {
   }
 }
 
-function fixCaps (opts, caps, onSauce) {
+function getCaps (testSpec) {
+  let caps = {
+    browserName: testSpec.browser
+    , device: testSpec.device
+    , version: testSpec.version.toString()
+    , platform: testSpec.platform
+    , name: testsMap[testSpec.test]
+  };
+  if (testSpec.orientation) {
+    caps['device-orientation'] = testSpec.orientation;
+  }
+  return fixCaps(testSpec, caps);
+}
+
+function fixCaps (testSpec, caps) {
   if (caps.version && caps.version.toString().length === 1) {
     caps.version = caps.version.toString() + ".0";
   }
   if (caps.device ||
-      _.contains(NATIVE_TESTS, opts.testType)) {
-    caps = fixAppiumCaps(opts, caps, onSauce);
+      _.contains(NATIVE_TESTS, testSpec.test)) {
+    caps = fixAppiumCaps(testSpec, caps);
   } else {
     delete caps.device;
   }
-  let tt = opts.testType.toLowerCase();
+  let tt = testSpec.test.toLowerCase();
   if (tt === "selfsigned") {
     caps.keepKeyChains = true;
   }
@@ -54,7 +69,7 @@ function fixCaps (opts, caps, onSauce) {
   return caps;
 }
 
-function fixAppium18Caps (opts, caps, onSauce) {
+function fixAppium18Caps (testSpec, caps) {
   if (caps.browserName === 'Safari') {
     caps.app = 'safari';
   } else if (caps.browserName === 'Chrome') {
@@ -64,7 +79,7 @@ function fixAppium18Caps (opts, caps, onSauce) {
   if (!caps.device) {
     caps.device = 'iPhone Simulator';
   }
-  if (!onSauce) {
+  if (!testSpec.onSauce) {
     caps.launchTimeout = 15000;
   }
   if (caps.device[0].toLowerCase() === 'i') {
@@ -85,7 +100,7 @@ function fixAppium18Caps (opts, caps, onSauce) {
     if (!caps.version) {
       caps.version = '4.2';
     }
-    if (opts.testType.toLowerCase() === 'selendroid') {
+    if (testSpec.test.toLowerCase() === 'selendroid') {
       caps.app = APPS.Selendroid;
       caps['app-package'] = 'io.selendroid.testapp';
       caps['app-activity'] = '.HomeScreenActivity';
@@ -95,12 +110,12 @@ function fixAppium18Caps (opts, caps, onSauce) {
   return caps;
 }
 
-function fixAppium1Caps (opts, caps, onSauce) {
-  caps.appiumVersion = opts.backendVersion.toString();
+function fixAppium1Caps (testSpec, caps) {
+  caps.appiumVersion = testSpec.backendVersion.toString();
   if (/^\d$/.test(caps.appiumVersion)) {
     caps.appiumVersion += ".0";
   }
-  let tt = opts.testType.toLowerCase();
+  let tt = testSpec.test.toLowerCase();
   if (_.contains(NATIVE_TESTS, tt)) {
     caps.browserName = '';
   }
@@ -112,7 +127,7 @@ function fixAppium1Caps (opts, caps, onSauce) {
   if (!caps.deviceName) {
     caps.deviceName = 'iPhone Simulator';
   }
-  if (!onSauce) {
+  if (!testSpec.onSauce) {
     caps.launchTimeout = 15000;
   }
   if (caps.deviceName[0].toLowerCase() === 'i') {
@@ -152,35 +167,35 @@ function fixAppium1Caps (opts, caps, onSauce) {
   return caps;
 }
 
-function fixAppiumCaps (opts, caps, onSauce) {
-  let appiumVer = parseFloat(opts.backendVersion) || null;
+function fixAppiumCaps (testSpec, caps, onSauce) {
+  let appiumVer = parseFloat(testSpec.backendVersion) || null;
   if (appiumVer >= 1) {
-    return fixAppium1Caps(opts, caps, onSauce);
+    return fixAppium1Caps(testSpec, caps, onSauce);
   } else {
-    return fixAppium18Caps(opts, caps, onSauce);
+    return fixAppium18Caps(testSpec, caps, onSauce);
   }
 }
 
-export async function runTest (multiRun, test, caps, opts, onSauce) {
+export async function runTest (testSpec, opts, multiRun) {
   let start = Date.now();
   let result = {};
   let driver;
   let log = msg => {
     if (!multiRun) console.log(msg);
   };
-  if (onSauce) {
+  if (testSpec.onSauce) {
     driver = yiewd.sauce(opts.userName, opts.accessKey, opts.server,
                          opts.port);
   } else {
     driver = yiewd.remote(opts.server, opts.port);
   }
   try {
-    result.startupTime = await test(driver, caps, opts);
-    if (opts.wait) {
+    result.startupTime = await testSpec.test(driver, testSpec.caps, opts);
+    if (testSpec.wait) {
       log(" - Waiting around for 120s...");
       await sleep(120000);
     }
-    if (onSauce) {
+    if (testSpec.onSauce) {
       log(" - Reporting pass");
       await driver.reportPass();
     } else {
@@ -192,7 +207,7 @@ export async function runTest (multiRun, test, caps, opts, onSauce) {
     log(e.stack);
     log("");
     result.stack = e.stack;
-    if (driver.sessionID && onSauce) {
+    if (driver.sessionID && testSpec.onSauce) {
       log(" - Reporting failure");
       await driver.reportFail();
       result.sessionId = driver.sessionID;
@@ -228,32 +243,52 @@ export async function runTest (multiRun, test, caps, opts, onSauce) {
   return result;
 }
 
-export async function runTestSet (multiRun, test, caps, opts, onSauce) {
+export async function runTestSet (testSpecs, opts) {
   let results = [];
+  let numTests = testSpecs.length;
+  let procs = opts.processes > numTests ? numTests : opts.processes;
+  const multiRun = testSpecs.length > 1;
   if (multiRun) {
     console.log("");
   }
+
+  // keep a map of tests in progress, this will be as long as our processes.
+  // As we add and remove tests slots will be filled and emptied in this map.
   let testsInProgress = {};
-  for (let i = 0; i < opts.processes; i++) {
+  for (let i = 0; i < procs; i++) {
     testsInProgress[i] = null;
   }
+
+  // Create a promise that we will resolve when all tests are done
   let setCb = Q.defer();
-  let numTestsInProgress = function() {
-    let num = 0;
-    for (let i = 0; i < opts.processes; i++) {
-      if (testsInProgress[i] !== null) {
-        num++;
-      }
-    }
-    return num;
+
+  // Helper to get the number of currently-executing tests
+  let numTestsInProgress = () => {
+    return _.filter(testsInProgress, x => x !== null).length;
   };
-  let checkRuns = function() {
-    if (results.length < opts.runs) {
-      if (results.length + numTestsInProgress() < opts.runs) {
-        _.each(testsInProgress, function(testCb, slot) {
-          if (testCb === null) {
-            testsInProgress[slot] = Q(runTest(multiRun, test, caps, opts, onSauce));
-            testsInProgress[slot].nodeify(function(err, res) {
+
+  // checkRuns periodically polls which tests are in progress and starts
+  // new tests whenever a concurrency slot is free. Once all tests are done
+  // it resolves the setCb that we deferred above.
+  let checkRuns = () => {
+    // if we have completed fewer tests than our total, see if we can start
+    // more tests
+    if (results.length < numTests) {
+      // if completed + in progress is still less than all the tests, we can
+      // start more
+      if (results.length + numTestsInProgress() < numTests) {
+        // loop through our possibly-available test slots
+        _.each(testsInProgress, (testPromise, slot) => {
+          let testSpec = testSpecs.shift(); // get the next test
+          if (testPromise === null) {
+            // if testPromise is null, that means the slot is free and
+            // we can start a new test! So we start it and put the promise
+            // in the slot to keep track
+            testsInProgress[slot] = Q(runTest(testSpec, opts, multiRun));
+
+            // Once we're done with this particular test, handle any
+            // unexpected errors and update the results array
+            testsInProgress[slot].nodeify((err, res) => {
               if (err) {
                 console.log("Got error running test: " + err.message);
                 console.log(err);
@@ -264,40 +299,51 @@ export async function runTestSet (multiRun, test, caps, opts, onSauce) {
           }
         });
       }
+      // whether we started more or not, set the function to poll again
       setTimeout(checkRuns, 75);
     } else {
+      // if we've completed all the tests, resolve the deferred
       setCb.resolve();
     }
   };
+
   checkRuns();
-  await setCb.promise;
+  await setCb.promise; // wait till we're done with all the tests
   return results;
 }
 
-export async function run (opts, caps) {
-  let onSauce = true;
-  if (!opts.userName || !opts.accessKey || opts.testType == 'js') {
-    onSauce = false;
+export async function run (opts) {
+  let testSpecs = [];
+  let numTests = 0, numCaps = 0;
+  const onSauce = opts.userName && opts.accessKey;
+  for (let optSpec of opts.tests) {
+    let testSpec = {};
+    let runs = optSpec.runs || 1;
+    testSpec.test = getTestByType(optSpec.test);
+    optSpec.onSauce = onSauce && optSpec.test !== 'js';
+    testSpec.caps = getCaps(optSpec);
+    testSpec.onSauce = optSpec.onSauce;
+    numTests += runs;
+    numCaps++;
+    for (let i = 0; i < runs; i++) {
+      testSpecs.push(testSpec);
+    }
   }
-  if (opts.processes > opts.runs) {
-    opts.runs = opts.processes;
+  const testStr = numTests + " test" + (numTests !== 1 ? "s" : "");
+  const pStr = opts.processes + " process" + (opts.processes !== 1 ? "es": "");
+  console.log("Running " + testStr + " in up to " + pStr + " against " +
+              opts.configName + " with " + numCaps + " sets of caps");
+  if (opts.verbose) {
+    console.log(util.inspect(_.pluck(testSpecs, 'caps')));
   }
-  let testStr = opts.runs + " test" + (opts.runs !== 1 ? "s" : "");
-  let pStr = opts.processes + " process" + (opts.processes !== 1 ? "es": "");
-  let test = getTestByType(opts.testType);
-  caps = fixCaps(opts, caps, onSauce);
-  console.log("Running " + testStr + " in " + pStr + " against " +
-              opts.configName + " with caps:");
-  console.log(util.inspect(caps));
-  let multiRun = opts.runs > 1;
-  let results = await runTestSet(multiRun, test, caps, opts, onSauce);
+  let results = await runTestSet(testSpecs, opts);
   let cleanResults = [];
   _.each(results, function(res) {
     if (!res.stack) {
       cleanResults.push(res);
     }
   });
-  if (multiRun) {
+  if (numTests > 1) {
     console.log("\n");
     if (cleanResults.length) {
       let sum = _.reduce(_.pluck(cleanResults, 'time'), function(m, n) { return m + n; }, 0);
@@ -314,7 +360,7 @@ export async function run (opts, caps) {
     _.each(results, function(res, i) {
       if (res.stack) {
         console.log("");
-        console.log("Error for run " + i);
+        console.log("Error for run " + (i + 1));
         if (res.sessionId) {
           console.log("https://saucelabs.com/tests/" + res.sessionId);
         }
