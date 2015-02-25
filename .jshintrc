@@ -5,5 +5,7 @@
   "unused": true,
   "trailing": true,
   "node": true,
-  "esnext": true
+  "esnext": true,
+  "indent": 2,
+  "experimental": ["asyncawait"]
 }
