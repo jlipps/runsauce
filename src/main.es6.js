@@ -8,8 +8,7 @@ import { parse as parseOpts, testsMap } from './parser';
 const opts = parseOpts();
 
 async function main () {
-  console.log(testsMap);
-  console.log(opts);
+  console.log('hey');
   //if (_.has(opts, 'setup') && opts.setup) {
     //yield setup.interactiveSetup();
     //process.exit(0);
@@ -49,8 +48,11 @@ async function main () {
   //}, config[opts.config]), caps);
 }
 
-main().then(() => {}, err => {
-  console.error(err.stack);
-  process.exit(1);
-});
+export function runsauce () {
+  main().then(() => {}, err => {
+    console.error(err.stack);
+    process.exit(1);
+  });
+}
+
 
