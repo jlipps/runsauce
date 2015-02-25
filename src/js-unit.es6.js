@@ -1,18 +1,20 @@
-"use strict";
-var request = require('monocle-request')
-  , monocle = require('monocle-js')
-  , o_O = monocle.o_O;
+import request from 'request';
+import _ from 'lodash';
+import Q from 'q';
+import { sleep } from 'asyncbox';
 
-var testUrls = {
+const asyncRequest = _.partial(Q.nfcall, request);
+
+const testUrls = {
   jasmine: "https://saucelabs.com/test_helpers/front_tests/index.html"
   , qunit: "https://saucelabs.com/test_helpers/front_tests/qunit.html"
   , mocha: "https://saucelabs.com/test_helpers/front_tests/mocha.html"
   , 'yui test': "http://saucelabs.com/test_helpers/front_tests/yui.html"
 };
 
-var runTest = o_O(function*(caps, opts) {
-  var restEndpoint = opts.jsRestEndpoint;
-  var requestParams = {
+async function runTest (caps, opts) {
+  const restEndpoint = opts.jsRestEndpoint;
+  const requestParams = {
     method: 'post',
     url: restEndpoint,
     auth: {
@@ -27,12 +29,12 @@ var runTest = o_O(function*(caps, opts) {
       name: caps.name + ' - ' + opts.framework,
     }
   };
-  var response = yield request(requestParams);
+  const response = await asyncRequest(requestParams);
   return response[1]['js tests'][0];
-});
+}
 
-var pollStatus = o_O(function*(testId, opts) {
-  var requestParams = {
+async function pollStatus (testId, opts) {
+  const requestParams = {
     method: 'post',
     url: opts.jsRestEndpoint + '/status',
     auth: {
@@ -45,10 +47,11 @@ var pollStatus = o_O(function*(testId, opts) {
     }
   };
 
-  var res, testInfo;
+  let res, testInfo;
   do {
-    yield monocle.utils.sleep(500); //better to wait an extra 500ms before the first poll, than wait an extra 500ms after the last poll!
-    res = yield request(requestParams);
+    await sleep(500); // better to wait an extra 500ms before the first poll,
+                      // than wait an extra 500ms after the last poll!
+    res = await asyncRequest(requestParams);
     testInfo = res[1]['js tests'][0];
     if (testInfo.status == "test error") {
       return false;
@@ -56,16 +59,12 @@ var pollStatus = o_O(function*(testId, opts) {
   } while(!res[1].completed);
 
   return testInfo.result.passed;
-});
+}
 
-var run = o_O(function*(driver, caps, opts) {
-  var testId = yield runTest(caps, opts);
-  var passed = yield pollStatus(testId, opts);
+export async function run (driver, caps, opts) {
+  let testId = await runTest(caps, opts);
+  let passed = await pollStatus(testId, opts);
   if (!passed) {
     throw new Error("JS Unit test failed");
   }
-});
-
-
-
-module.exports.run = run;
+}

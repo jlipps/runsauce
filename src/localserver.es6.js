@@ -1,11 +1,9 @@
-"use strict";
+import http from 'http';
+import Q from 'q';
 
-var http = require('http')
-  , o_O = require('monocle-js').o_O
-  , o_C = require('monocle-js').o_C
-  , server = null;
+let server = null;
 
-exports.run = function() {
+export function run () {
   console.log(" - Starting simple web server");
   server = http.createServer(function(req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
@@ -13,11 +11,9 @@ exports.run = function() {
   });
   server.listen(8000);
   return server;
-};
+}
 
-exports.stop = o_O(function*() {
+export async function stop () {
   console.log(" - Shutting down simple web server");
-  var cb = o_C();
-  server.close(cb);
-  yield cb;
-});
+  await Q.nfcall(server.close);
+}

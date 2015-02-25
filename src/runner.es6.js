@@ -165,7 +165,7 @@ export async function runTest (multiRun, test, caps, opts, onSauce) {
   let start = Date.now();
   let result = {};
   let driver;
-  let log = function(msg) {
+  let log = msg => {
     if (!multiRun) console.log(msg);
   };
   if (onSauce) {
@@ -252,8 +252,8 @@ export async function runTestSet (multiRun, test, caps, opts, onSauce) {
       if (results.length + numTestsInProgress() < opts.runs) {
         _.each(testsInProgress, function(testCb, slot) {
           if (testCb === null) {
-            testsInProgress[slot] = exports.runTest(multiRun, test, caps, opts, onSauce);
-            testsInProgress[slot].add(function(err, res) {
+            testsInProgress[slot] = Q(runTest(multiRun, test, caps, opts, onSauce));
+            testsInProgress[slot].nodeify(function(err, res) {
               if (err) {
                 console.log("Got error running test: " + err.message);
                 console.log(err);

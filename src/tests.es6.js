@@ -1,7 +1,6 @@
-"use strict";
-
-import localServer from './localserver.js';
-import jsUnit from './js-unit';
+import { run as runLocalServer,
+         stop as stopLocalServer } from './localserver.js';
+import { run as runJsUnit } from './js-unit';
 import 'should';
 
 let tests = {};
@@ -35,7 +34,7 @@ tests.longWebTest = async function (driver, caps) {
 };
 
 let localTest = async function (driver, caps, url) {
-  localServer.run();
+  runLocalServer();
   let startupTime;
   try {
     startupTime = await start(driver, caps);
@@ -43,10 +42,10 @@ let localTest = async function (driver, caps, url) {
     let h1 = await driver.elementByTagName('h1');
     (await h1.text()).should.include("the server of awesome");
   } catch (e) {
-    await localServer.stop();
+    await stopLocalServer();
     throw e;
   }
-  await localServer.stop();
+  await stopLocalServer();
   return startupTime;
 };
 
@@ -200,7 +199,7 @@ tests.androidHybridTest = async function (driver, caps) {
 };
 
 tests.jsTest = async function (driver, caps, opts){
-  await jsUnit.run(driver, caps, opts);
+  await runJsUnit(driver, caps, opts);
   return 0;
 };
 
