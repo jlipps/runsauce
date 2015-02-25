@@ -1,208 +1,207 @@
 "use strict";
 
-var tests = {}
-  , monocle = require('monocle-js')
-  , o_O = monocle.o_O
-  , localServer = require('./localserver.js')
-  , jsUnit = require('./js-unit');
+import localServer from './localserver.js';
+import jsUnit from './js-unit';
+import 'should';
 
-require('should');
+let tests = {};
 
-var isAppium1 = function(caps) {
+function isAppium1 (caps) {
   return caps.appiumVersion && parseFloat(caps.appiumVersion) >= 1;
+}
+
+let start = async function (driver, caps) {
+  let startTime = Date.now();
+  await driver.init(caps);
+  await driver.setImplicitWaitTimeout(15000);
+  return (Date.now() - startTime);
 };
 
-var start = o_O(function*(driver, caps) {
-  var startTime = Date.now();
-  yield driver.init(caps);
-  yield driver.setImplicitWaitTimeout(15000);
-  return (Date.now() - startTime);
-});
-
-tests.webTest = o_O(function*(driver, caps) {
-  var startupTime = yield start(driver, caps);
-  yield driver.get("http://google.com");
-  (yield driver.title()).should.include("Google");
+tests.webTest = async function (driver, caps) {
+  let startupTime = await start(driver, caps);
+  await driver.get("http://google.com");
+  (await driver.title()).should.include("Google");
   return startupTime;
-});
+};
 
-tests.longWebTest = o_O(function*(driver, caps) {
-  var startupTime = yield start(driver, caps);
-  for (var i = 0; i < 10; i++) {
-    yield driver.get("http://google.com");
-    (yield driver.title()).should.include("Google");
-    yield driver.sleep(2000);
+tests.longWebTest = async function (driver, caps) {
+  let startupTime = await start(driver, caps);
+  for (let i = 0; i < 10; i++) {
+    await driver.get("http://google.com");
+    (await driver.title()).should.include("Google");
+    await driver.sleep(2000);
   }
   return startupTime;
-});
+};
 
-var localTest = o_O(function*(driver, caps, url) {
+let localTest = async function (driver, caps, url) {
   localServer.run();
-  var startupTime;
+  let startupTime;
   try {
-    startupTime = yield start(driver, caps);
-    yield driver.get(url);
-    var h1 = yield driver.elementByTagName('h1');
-    (yield h1.text()).should.include("the server of awesome");
+    startupTime = await start(driver, caps);
+    await driver.get(url);
+    let h1 = await driver.elementByTagName('h1');
+    (await h1.text()).should.include("the server of awesome");
   } catch (e) {
-    yield localServer.stop();
+    await localServer.stop();
     throw e;
   }
-  yield localServer.stop();
+  await localServer.stop();
   return startupTime;
-});
+};
 
-tests.webTestConnect = o_O(function*(driver, caps) {
-  return (yield localTest(driver, caps, "http://localhost:8000"));
-});
 
-tests.webTestLocalName = o_O(function*(driver, caps, opts) {
-  var host = opts.localname;
+tests.webTestConnect = async function (driver, caps) {
+  return (await localTest(driver, caps, "http://localhost:8000"));
+};
+
+tests.webTestLocalName = async function (driver, caps, opts) {
+  let host = opts.localname;
   if (host === "" || host === "localhost" || host.indexOf(".local") === -1) {
     throw new Error("Can't run local name test without an interesting hostname");
   }
-  return (yield localTest(driver, caps, "http://" + host + ":8000"));
-});
+  return (await localTest(driver, caps, "http://" + host + ":8000"));
+};
 
-tests.webTestHttps = o_O(function*(driver, caps) {
-  var startupTime = yield start(driver, caps);
-  yield driver.get("https://buildslave.saucelabs.com");
-  (yield driver.title()).should.include("Sauce Labs");
+tests.webTestHttps = async function (driver, caps) {
+  let startupTime = await start(driver, caps);
+  await driver.get("https://buildslave.saucelabs.com");
+  (await driver.title()).should.include("Sauce Labs");
   return startupTime;
-});
+};
 
-tests.webTestHttpsSelfSigned = o_O(function*(driver, caps) {
+tests.webTestHttpsSelfSigned = async function (driver, caps) {
   caps.keepKeyChains = true;
-  var startupTime = yield start(driver, caps);
-  yield driver.get("https://selfsigned.buildslave.saucelabs.com");
-  (yield driver.title()).should.include("Sauce Labs");
+  let startupTime = await start(driver, caps);
+  await driver.get("https://selfsigned.buildslave.saucelabs.com");
+  (await driver.title()).should.include("Sauce Labs");
   return startupTime;
-});
+};
 
-tests.iosTest = o_O(function*(driver, caps) {
-  var startupTime = yield start(driver, caps);
-  var appium1 = isAppium1(caps);
-  var fs;
+tests.iosTest = async function (driver, caps) {
+  let startupTime = await start(driver, caps);
+  let appium1 = isAppium1(caps);
+  let fs;
   if (appium1) {
-    fs = yield driver.elementsByClassName('UIATextField');
+    fs = await driver.elementsByClassName('UIATextField');
   } else {
-    fs = yield driver.elementsByTagName('textField');
+    fs = await driver.elementsByTagName('textField');
   }
-  yield fs[0].sendKeys('4');
-  yield fs[1].sendKeys('5');
+  await fs[0].sendKeys('4');
+  await fs[1].sendKeys('5');
   if (appium1) {
-    yield driver.elementByClassName("UIAButton").click();
+    await driver.elementByClassName("UIAButton").click();
   } else {
-    yield driver.elementByTagName("button").click();
+    await driver.elementByTagName("button").click();
   }
-  var text;
+  let text;
   if (appium1) {
-    text = yield driver.elementByClassName('UIAStaticText').text();
+    text = await driver.elementByClassName('UIAStaticText').text();
   } else {
-    text = yield driver.elementByTagName('staticText').text();
+    text = await driver.elementByTagName('staticText').text();
   }
   text.should.equal('9');
   return startupTime;
-});
+};
 
-tests.iosHybridTest = o_O(function*(driver, caps) {
+tests.iosHybridTest = async function (driver, caps) {
   if (!isAppium1(caps)) {
     throw new Error("Hybrid test only works with Appium 1 caps");
   }
-  var startupTime = yield start(driver, caps);
-  var ctxs = yield driver.contexts();
+  let startupTime = await start(driver, caps);
+  let ctxs = await driver.contexts();
   ctxs.length.should.be.above(0);
-  yield driver.context(ctxs[ctxs.length - 1]);
-  yield driver.get("http://google.com");
-  (yield driver.title()).should.include("Google");
-  yield driver.context(ctxs[0]);
-  (yield driver.source()).should.include("<AppiumAUT>");
+  await driver.context(ctxs[ctxs.length - 1]);
+  await driver.get("http://google.com");
+  (await driver.title()).should.include("Google");
+  await driver.context(ctxs[0]);
+  (await driver.source()).should.include("<AppiumAUT>");
   return startupTime;
-});
+};
 
-tests.androidTest = o_O(function*(driver, caps) {
-  var startupTime = yield start(driver, caps);
-  yield androidCycle(driver, caps);
+tests.androidTest = async function (driver, caps) {
+  let startupTime = await start(driver, caps);
+  await androidCycle(driver, caps);
   return startupTime;
-});
+};
 
-tests.androidLongTest = o_O(function*(driver, caps) {
-  var startupTime = yield start(driver, caps);
-  for (var i = 0; i < 15; i++) {
-    yield androidCycle(driver, caps);
+tests.androidLongTest = async function (driver, caps) {
+  let startupTime = await start(driver, caps);
+  for (let i = 0; i < 15; i++) {
+    await androidCycle(driver, caps);
   }
   return startupTime;
-});
+};
 
-var androidCycle = o_O(function*(driver, caps) {
-  var appium1 = isAppium1(caps);
+async function androidCycle (driver, caps) {
+  let appium1 = isAppium1(caps);
   if (appium1) {
-    yield driver.elementByAccessibilityId("Add Contact").click();
+    await driver.elementByAccessibilityId("Add Contact").click();
   } else {
-    yield driver.elementByName("Add Contact").click();
+    await driver.elementByName("Add Contact").click();
   }
-  var fs;
+  let fs;
   if (appium1) {
-    fs = yield driver.elementsByClassName("android.widget.EditText");
+    fs = await driver.elementsByClassName("android.widget.EditText");
   } else {
-    fs = yield driver.elementsByTagName("textfield");
+    fs = await driver.elementsByTagName("textfield");
   }
-  yield fs[0].sendKeys("My Name");
-  yield fs[2].sendKeys("someone@somewhere.com");
-  "My Name".should.equal(yield fs[0].text());
-  "someone@somewhere.com".should.equal(yield fs[2].text());
-  yield driver.back();
-  yield driver.sleep(2);
-  var text;
+  await fs[0].sendKeys("My Name");
+  await fs[2].sendKeys("someone@somewhere.com");
+  "My Name".should.equal(await fs[0].text());
+  "someone@somewhere.com".should.equal(await fs[2].text());
+  await driver.back();
+  await driver.sleep(2);
+  let text;
   if (appium1) {
-    text = yield driver.elementByClassName("android.widget.Button").text();
+    text = await driver.elementByClassName("android.widget.Button").text();
   } else {
-    text = yield driver.elementByTagName("button").text();
+    text = await driver.elementByTagName("button").text();
   }
   text.should.equal("Add Contact");
-  var cb;
+  let cb;
   if (appium1) {
-    cb = yield driver.elementByXPath("//android.widget.CheckBox");
+    cb = await driver.elementByXPath("//android.widget.CheckBox");
   } else {
-    cb = yield driver.elementByXPath("//checkBox");
+    cb = await driver.elementByXPath("//checkBox");
   }
-  yield cb.click();
-  "Show Invisible Contacts (Only)".should.equal(yield cb.text());
-});
+  await cb.click();
+  "Show Invisible Contacts (Only)".should.equal(await cb.text());
+}
 
-tests.selendroidTest = o_O(function*(driver, caps) {
-  var startupTime = yield start(driver, caps);
-  yield driver.elementById("buttonStartWebView").click();
-  yield driver.elementByClassName("android.webkit.WebView");
-  yield driver.window("WEBVIEW");
-  yield driver.sleep(6);
-  var f = yield driver.elementById("name_input");
+tests.selendroidTest = async function (driver, caps) {
+  let startupTime = await start(driver, caps);
+  await driver.elementById("buttonStartWebView").click();
+  await driver.elementByClassName("android.webkit.WebView");
+  await driver.window("WEBVIEW");
+  await driver.sleep(6);
+  let f = await driver.elementById("name_input");
   // TODO: uncomment following line when selendroid fixes #492
-  //yield f.clear();
-  yield f.sendKeys("Test string");
-  (yield f.getAttribute('value')).toLowerCase().should.include("test string");
-  yield driver.elementByCss("input[type=submit]").click();
-  yield driver.sleep(3);
+  //await f.clear();
+  await f.sendKeys("Test string");
+  (await f.getAttribute('value')).toLowerCase().should.include("test string");
+  await driver.elementByCss("input[type=submit]").click();
+  await driver.sleep(3);
   "This is my way of saying hello".should
-    .equal(yield driver.elementByTagName("h1").text());
+    .equal(await driver.elementByTagName("h1").text());
   return startupTime;
-});
+};
 
-tests.androidHybridTest = o_O(function*(driver, caps) {
-  var startupTime = yield start(driver, caps);
-  yield driver.sleep(3);
-  var ctxs = yield driver.contexts();
-  yield driver.context(ctxs[ctxs.length - 1]);
-  var el = yield driver.elementById('i_am_a_textbox');
-  yield el.clear();
-  yield el.type("Test string");
-  "Test string".should.equal(yield el.getAttribute('value'));
+tests.androidHybridTest = async function (driver, caps) {
+  let startupTime = await start(driver, caps);
+  await driver.sleep(3);
+  let ctxs = await driver.contexts();
+  await driver.context(ctxs[ctxs.length - 1]);
+  let el = await driver.elementById('i_am_a_textbox');
+  await el.clear();
+  await el.type("Test string");
+  "Test string".should.equal(await el.getAttribute('value'));
   return startupTime;
-});
+};
 
-tests.jsTest = o_O(function*(driver, caps, opts){
-  yield jsUnit.run(driver, caps, opts);
+tests.jsTest = async function (driver, caps, opts){
+  await jsUnit.run(driver, caps, opts);
   return 0;
-});
+};
 
-module.exports = tests;
+export { tests };
