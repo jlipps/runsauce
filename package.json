@@ -32,6 +32,7 @@
     "test": "./test"
   },
   "dependencies": {
+    "asyncbox": "^1.0.4",
     "babel-runtime": "^4.4.6",
     "lodash": "^3.3.1",
     "optimist": "~0.6.0",
