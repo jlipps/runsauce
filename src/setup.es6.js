@@ -1,28 +1,27 @@
 "use strict";
 
-var path = require('path')
-  , fs = require('monocle-fs')
-  , monocle = require('monocle-js')
-  , o_O = monocle.o_O
-  , o_C = monocle.o_C
-  , prompt = require('prompt')
-  , configFile = path.resolve(process.env.HOME, ".runsauce.json");
+import path from 'path';
+import fs from 'fs';
+import prompt from 'prompt';
+import Q from 'q';
+
+const configFile = path.resolve(process.env.HOME, ".runsauce.json");
 
 prompt.message = ">";
 prompt.delimiter = " ";
 prompt.colors = false;
 
-var getInput = o_O(function*() {
-  var cb = o_C();
-  var args = Array.prototype.slice.call(arguments);
-  args.push(cb);
-  prompt.get.apply(null, args);
-  return (yield cb);
-});
+function getInput (opts) {
+  return Q.nfcall(prompt.get, opts);
+}
 
-var promptOverwrite = o_O(function*(config) {
+function writeFile (file, data) {
+  return Q.nfcall(fs.writeFile, file, data);
+}
+
+async function promptOverwrite (config) {
   console.log("A configuration file for runsauce already exists.");
-  var res = yield getInput({
+  let res = await getInput({
     name: 'proceed'
     , description: "Are you sure you want to overwrite it?"
     , default: 'Y'
@@ -32,13 +31,13 @@ var promptOverwrite = o_O(function*(config) {
   if (res.proceed !== "Y") {
     process.exit(0);
   }
-  yield fs.writeFile(configFile + ".bak", JSON.stringify(config));
+  await writeFile(configFile + ".bak", JSON.stringify(config));
   console.log("Backup written to " + configFile + ".bak");
-});
+}
 
-var promptForConfig = o_O(function*() {
+async function promptForConfig () {
   console.log("\nAlright, let's add your Sauce config");
-  var res = yield getInput([{
+  let res = await getInput([{
     name: 'userName'
     , description: 'Production username'
     , default: process.env.SAUCE_USERNAME
@@ -60,10 +59,10 @@ var promptForConfig = o_O(function*() {
       , jsRestEndpoint: 'https://saucelabs.com/rest/v1/' + res.userName + '/js-tests'
     }
   };
-});
+}
 
-exports.getConfig = function() {
-  var config;
+export function getConfig () {
+  let config;
   try {
     config = require(configFile);
   } catch (e) {
@@ -71,22 +70,22 @@ exports.getConfig = function() {
     config = null;
   }
   return config;
-};
+}
 
-exports.interactiveSetup = o_O(function*() {
+export async function interactiveSetup () {
   console.log("Running setup!");
   console.log("--------------");
   prompt.start();
-  var config = exports.getConfig();
+  let config = exports.getConfig();
   if (config) {
-    yield promptOverwrite(config);
+    await promptOverwrite(config);
   }
-  config = yield promptForConfig();
-  yield fs.writeFile(configFile, JSON.stringify(config));
+  config = await promptForConfig();
+  await writeFile(configFile, JSON.stringify(config));
   console.log("\nOK, config has been written to " + configFile);
   console.log("\nIt's just JSON, so you can add your own configs as well");
   console.log("Maybe add your stewardess as 'dev'?");
   console.log("\nBye now! You could try to run something, like:");
   console.log('> runsauce --test web --browser safari --version 7 ' +
               '--platform "Mac 10.9"');
-});
+}

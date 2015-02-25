@@ -1,18 +1,17 @@
 "use strict";
 
-//import _ from 'lodash';
+import _ from 'lodash';
 import { parse as parseOpts, testsMap } from './parser';
 //import { run } from './runner';
-//import { setup } from './setup';
+import { interactiveSetup } from './setup';
 
 const opts = parseOpts();
 
 async function main () {
-  console.log('hey');
-  //if (_.has(opts, 'setup') && opts.setup) {
-    //yield setup.interactiveSetup();
-    //process.exit(0);
-  //}
+  if (_.has(opts, 'setup') && opts.setup) {
+    await interactiveSetup();
+    process.exit(0);
+  }
   //var config = setup.getConfig();
   //if (config === null) {
     //console.error("Could not load config file, please run with --setup");
