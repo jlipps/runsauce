@@ -1,10 +1,8 @@
-"use strict";
+import optimist from 'optimist';
+import os from 'os';
+import _ from 'lodash';
 
-var optimist = require('optimist')
-  , os = require('os')
-  , _ = require('underscore');
-
-var browserMap = {
+const browserMap = {
   's': 'Safari'
   , 'b': 'Browser'
   , 'c': 'Chrome'
@@ -15,7 +13,7 @@ var browserMap = {
   , 'a': 'Android'
 };
 
-var platformMap = {
+const platformMap = {
   'w': 'Windows 2012',
   'w12': 'Windows 2012',
   'w8': 'Windows 2008',
@@ -29,7 +27,7 @@ var platformMap = {
   's': 'SquirrelOS'
 };
 
-var testFrameworkMap = {
+const testFrameworkMap = {
   'j': 'jasmine',
   'q': 'qunit',
   'm': 'mocha',
@@ -37,21 +35,21 @@ var testFrameworkMap = {
   'c': 'custom'
 };
 
-var deviceMap = {
+const deviceMap = {
   'ip': 'iPhone Simulator'
   , 'ipa': 'iPad Simulator'
   , 'a': 'Android'
   , 'ae': 'Android Emulator'
 };
 
-var orientationMap = {
+const orientationMap = {
   'p': 'portrait'
 , 'l': 'landscape'
 };
 
-var shortcutHelp = function() {
-  var t = "All the options have nice shortcuts:\n\n";
-  var shortcutTypes = {
+let shortcutHelp = function () {
+  let t = "All the options have nice shortcuts:\n\n";
+  const shortcutTypes = {
     'Platforms (-p)': platformMap
     , 'Browsers (-b)': browserMap
     , 'Devices (-d)': deviceMap
@@ -71,7 +69,7 @@ var shortcutHelp = function() {
   return t;
 };
 
-module.exports.testsMap = {
+const testsMap = {
   web: "Basic web test (default)",
   web_long: "Longer basic web test",
   https: "Basic web test of https site",
@@ -87,16 +85,16 @@ module.exports.testsMap = {
   js: "Basic js unit test"
 };
 
-var testsHelp = function() {
-  var t = "Here are the available test types:\n\n";
+let testsHelp = function() {
+  let t = "Here are the available test types:\n\n";
   _.each(module.exports.testsMap, function(test, type) {
     t += type + ": " + test + "\n";
   });
   return t;
 };
 
-module.exports.parse = function() {
-  var optimistObj = optimist
+export function parse () {
+  let optimistObj = optimist
     .options('c', {
       alias: 'config',
       default: 'prod',
@@ -191,9 +189,9 @@ module.exports.parse = function() {
     .boolean(['setup', 'wait', 'help', 'shortcuts', 'tests']);
 
 
-  var args = optimistObj.argv;
+  let args = optimistObj.argv;
   if (args.help) {
-    var helpText = optimistObj.help();
+    let helpText = optimistObj.help();
     helpText += "\n(To see all the shortcuts, run with --shortcuts)\n";
     helpText += "\n(To see all the test types, run with --tests)\n";
     console.error(helpText);
@@ -231,4 +229,6 @@ module.exports.parse = function() {
   }
 
   return args;
-};
+}
+
+export { testsMap };

@@ -1,14 +1,15 @@
 "use strict";
 
 //import _ from 'lodash';
-//import { parser, testsMap } from './parser';
+import { parse as parseOpts, testsMap } from './parser';
 //import { run } from './runner';
 //import { setup } from './setup';
 
-//const opts = parser.parse();
+const opts = parseOpts();
 
 async function main () {
-  throw new Error('foo');
+  console.log(testsMap);
+  console.log(opts);
   //if (_.has(opts, 'setup') && opts.setup) {
     //yield setup.interactiveSetup();
     //process.exit(0);
@@ -48,7 +49,7 @@ async function main () {
   //}, config[opts.config]), caps);
 }
 
-main().then(console.log, err => {
+main().then(() => {}, err => {
   console.error(err.stack);
   process.exit(1);
 });
