@@ -196,6 +196,11 @@ export function parse () {
       describe: 'Show more logging',
       demand: false
     })
+    .options('u', {
+      alias: 'build',
+      describe: 'Sauce build id',
+      demand: false
+    })
     .boolean(['setup', 'wait', 'help', 'shortcuts', 'tests', 'verbose']);
 
 

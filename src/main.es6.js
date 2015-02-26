@@ -32,6 +32,7 @@ async function main () {
       exit("You didn't specify any tests in the testfile!");
     }
     opts.config = opts.config || testfile.c || testfile.config;
+    opts.build = opts.build || testfile.u || testfile.build;
     opts.processes = testfile.n || testfile.processes || opts.processes;
     tests = testfile.tests.map(t => mapArgs(t));
   }
@@ -49,6 +50,7 @@ async function main () {
     tests: opts.tests,
     processes: opts.processes,
     verbose: opts.verbose,
+    build: opts.build,
   }, config[opts.config]));
 }
 

@@ -169,7 +169,7 @@ function fixAppium1Caps (testSpec, caps) {
 
 function fixAppiumCaps (testSpec, caps, onSauce) {
   let appiumVer = parseFloat(testSpec.backendVersion) || null;
-  if (appiumVer >= 1) {
+  if (appiumVer >= 0.18) {
     return fixAppium1Caps(testSpec, caps, onSauce);
   } else {
     return fixAppium18Caps(testSpec, caps, onSauce);
@@ -328,6 +328,15 @@ export async function run (opts) {
     testSpec.testName = optSpec.test;
     optSpec.onSauce = onSauce && optSpec.test !== 'js';
     testSpec.caps = getCaps(optSpec);
+    let build = opts.build;
+    if (build) {
+      build = build.replace("%t", Date.now());
+    } else if (optSpec.onSauce) {
+      build = `runsauce-${opts.userName}-${Date.now()}`;
+    }
+    if (build) {
+      testSpec.caps.build = build;
+    }
     testSpec.onSauce = optSpec.onSauce;
     numTests += runs;
     numCaps++;
@@ -343,14 +352,12 @@ export async function run (opts) {
     console.log(util.inspect(_.pluck(testSpecs, 'caps')));
   }
   let results = await runTestSet(testSpecs, opts);
-  let cleanResults = [];
-  _.each(results, function(res) {
-    if (!res.stack) {
-      cleanResults.push(res);
-    }
-  });
+  let cleanResults = results.filter(r => !r.stack);
   if (numTests > 1) {
     console.log("\n");
+    console.log("RAN: " + results.length + " // PASSED: " +
+                cleanResults.length + " // FAILED: " + (results.length -
+                cleanResults.length));
     if (cleanResults.length) {
       let sum = _.reduce(_.pluck(cleanResults, 'time'), function(m, n) { return m + n; }, 0);
       let avg = sum / cleanResults.length;
@@ -363,19 +370,22 @@ export async function run (opts) {
       console.log("No statistics available since every test failed");
     }
 
-    _.each(results, function(res, i) {
+    let errs = 0;
+    for (let res of results) {
+      errs++;
       if (res.stack) {
         console.log("");
-        console.log("Error for run " + (i + 1));
-        if (res.sessionId) {
-          console.log("https://saucelabs.com/tests/" + res.sessionId);
-        }
         console.log("----------------");
+        console.log("Error #" + errs );
+        console.log("----------------");
+        if (res.sessionId) {
+          console.log("SAUCE URL: https://saucelabs.com/tests/" + res.sessionId);
+        }
         console.log("TEST: " + res.test);
         console.log("CAPS: " + util.inspect(res.caps));
         console.log("----------------");
         console.log(res.stack);
       }
-    });
+    }
   }
 }
