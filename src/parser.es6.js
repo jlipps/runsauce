@@ -78,6 +78,7 @@ const testsMap = {
   localname: "Basic web test of locally hosted site with custom name",
   ios: "Basic ios native test",
   ios_hybrid: "Basic ios hybrid test",
+  ios_loc_serv: "iOS location services test",
   android: "Basic android native test",
   android_long: "Long android native test",
   android_hybrid: "Basic appium hybrid test",
@@ -223,8 +224,6 @@ export function parse () {
     process.exit(0);
   }
 
-  mapArgs(args);
-
   return args;
 }
 
@@ -284,8 +283,9 @@ function prepareTestSet (opts, tests = null) {
 
   // now our keys can be arrays so we need to find all combinations of
   // platforms
-  let combiningKeys = ['browser', 'platform', 'device', 'backendVersion',
-                       'orientation', 'version', 'test'];
+  let combiningKeys = ['browser', 'b', 'platform', 'p', 'device', 'd',
+                       'backendVersion', 'a', 'orientation', 'o', 'version',
+                       'v', 'test', 't'];
   for (let k of combiningKeys) {
     for (let t of tests) {
       if (t[k] instanceof Array) {
@@ -309,6 +309,46 @@ function prepareTestSet (opts, tests = null) {
     // iteration, other keys can be expanded and will combine with the
     // already-expanded set from this iteration
   }
+  tests = tests.filter(t => {
+    let okCombo = true;
+    for (let v of _.values(t)) {
+      let restriction = v.split('|')[1];
+      if (typeof restriction === 'undefined') {
+        continue;
+      }
+      const specialChars = ['<', '>', '!'];
+      let [restrictOnKey, restrictOnValue] = restriction.split('=');
+      let lastChar = restrictOnKey[restrictOnKey.length - 1];
+      if (_.contains(specialChars, lastChar)) {
+        restrictOnKey = restrictOnKey.slice(0, -1);
+      }
+      let restrictedValue = t[restrictOnKey].split('|')[0];
+      switch (lastChar) {
+        case '>':
+          if (restrictedValue < restrictOnValue) {
+            okCombo = false;
+          }
+          break;
+        case '<':
+          if (restrictedValue > restrictOnValue) {
+            okCombo = false;
+          }
+          break;
+        case '!':
+          okCombo = restrictedValue !== restrictOnValue;
+          break;
+        default:
+          okCombo = restrictedValue == restrictOnValue;
+      }
+      if (!okCombo) return false;
+    }
+    return true;
+  }).map(t => {
+    for (let [k, v] of _.pairs(t)) {
+      t[k] = v.split('|')[0];
+    }
+    return t;
+  });
   opts.tests = tests;
   return tests;
 }

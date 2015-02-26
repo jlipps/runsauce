@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { run as runLocalServer,
          stop as stopLocalServer } from './localserver.js';
 import { run as runJsUnit } from './js-unit';
@@ -115,6 +116,18 @@ tests.iosHybridTest = async function (driver, caps) {
   (await driver.title()).should.include("Google");
   await driver.context(ctxs[0]);
   (await driver.source()).should.include("<AppiumAUT>");
+  return startupTime;
+};
+
+tests.iosLocServTest = async function (driver, caps) {
+  _.extend(caps, {
+    locationServicesAuthorized: true,
+    locationServicesEnabled: true,
+    bundleId: 'io.appium.TestApp'
+  });
+  let startupTime = await start(driver, caps);
+  let uiSwitch = await driver.elementByClassName('UIASwitch');
+  (await uiSwitch.getAttribute('value')).should.eql(1);
   return startupTime;
 };
 

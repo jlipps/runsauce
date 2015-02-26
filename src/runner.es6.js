@@ -27,6 +27,7 @@ function getTestByType (testType) {
     case 'localname': return tests.webTestLocalName;
     case 'appium': case 'ios': return tests.iosTest;
     case 'ios_hybrid': return tests.iosHybridTest;
+    case 'ios_loc_serv': return tests.iosLocServTest;
     case 'android': return tests.androidTest;
     case 'android_long': return tests.androidLongTest;
     case 'android_hybrid': return tests.androidHybridTest;
@@ -155,6 +156,9 @@ function fixAppium1Caps (testSpec, caps) {
     } else if (tt === 'android_hybrid') {
       caps.appActivity = '.view.WebView1';
       caps.app = APPS.AndroidHybrid;
+      if (parseFloat(caps.platformVersion < 4.4)) {
+        caps.automationName = 'Selendroid';
+      }
     }
     if (!caps.platformVersion) {
       caps.platformVersion = '4.3';

@@ -34,9 +34,10 @@ async function main () {
     opts.config = opts.config || testfile.c || testfile.config;
     opts.build = opts.build || testfile.u || testfile.build;
     opts.processes = testfile.n || testfile.processes || opts.processes;
-    tests = testfile.tests.map(t => mapArgs(t));
+    tests = testfile.tests;
   }
   prepareTestSet(opts, tests);
+  opts.tests = opts.tests.map(t => mapArgs(t));
   if (!_.has(config, opts.config)) {
     exit("Config " + opts.config + " doesn't exist");
   }
