@@ -1,6 +1,3 @@
-import _ from 'lodash';
-import { run as runLocalServer,
-         stop as stopLocalServer } from './localserver.js';
 import { run as runJsUnit } from './js-unit';
 import 'should';
 
@@ -35,18 +32,10 @@ tests.longWebTest = async function (driver, caps) {
 };
 
 let localTest = async function (driver, caps, url) {
-  runLocalServer();
-  let startupTime;
-  try {
-    startupTime = await start(driver, caps);
-    await driver.get(url);
-    let h1 = await driver.elementByTagName('h1');
-    (await h1.text()).should.include("the server of awesome");
-  } catch (e) {
-    await stopLocalServer();
-    throw e;
-  }
-  await stopLocalServer();
+  let startupTime = await start(driver, caps);
+  await driver.get(url);
+  let h1 = await driver.elementByTagName('h1');
+  (await h1.text()).should.include("the server of awesome");
   return startupTime;
 };
 

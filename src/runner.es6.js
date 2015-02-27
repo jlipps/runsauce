@@ -5,6 +5,8 @@ import yiewd from 'yiewd';
 import { sleep } from 'asyncbox';
 import { tests } from './tests';
 import { testsMap } from './parser';
+import { run as runLocalServer,
+         stop as stopLocalServer } from './localserver.js';
 
 const APPS = {
   'iOS7': 'http://appium.s3.amazonaws.com/TestApp7.0.app.zip',
@@ -322,13 +324,16 @@ export async function runTestSet (testSpecs, opts) {
   return results;
 }
 
-export async function run (opts) {
+function buildTestSuite (opts) {
   let testSpecs = [];
-  let numTests = 0, numCaps = 0;
+  let numTests = 0, numCaps = 0, needsLocalServer = false;
   const onSauce = opts.userName && opts.accessKey;
   for (let optSpec of opts.tests) {
     let testSpec = {};
     let runs = optSpec.runs || 1;
+    if (_.contains(["localname", "connect"], optSpec.test)) {
+      needsLocalServer = true;
+    }
     testSpec.test = getTestByType(optSpec.test);
     testSpec.testName = optSpec.test;
     optSpec.onSauce = onSauce && optSpec.test !== 'js';
@@ -352,48 +357,63 @@ export async function run (opts) {
       testSpecs.push(testSpec);
     }
   }
+  return [testSpecs, numTests, numCaps, needsLocalServer];
+}
+
+function reportSuite (results) {
+  let cleanResults = results.filter(r => !r.stack);
+  console.log("\n");
+  console.log("RAN: " + results.length + " // PASSED: " +
+              cleanResults.length + " // FAILED: " + (results.length -
+              cleanResults.length));
+  if (cleanResults.length) {
+    let sum = _.reduce(_.pluck(cleanResults, 'time'), function(m, n) { return m + n; }, 0);
+    let avg = sum / cleanResults.length;
+    let startSum = _.reduce(_.pluck(cleanResults, 'startupTime'), function(m, n) { return m + n; }, 0);
+    let startAvg = startSum / cleanResults.length;
+    console.log("Average successful test run time: " + (avg / 1000).toFixed(2) + "s");
+    console.log("Average successful test startup time: " + (startAvg / 1000).toFixed(2) +
+        "s (" + (startAvg / avg * 100).toFixed(2) + "% of total)");
+  } else {
+    console.log("No statistics available since every test failed");
+  }
+
+  let errs = 0;
+  for (let res of results) {
+    errs++;
+    if (res.stack) {
+      console.log("");
+      console.log("----------------");
+      console.log("Error #" + errs );
+      console.log("----------------");
+      if (res.sessionId) {
+        console.log("SAUCE URL: https://saucelabs.com/tests/" + res.sessionId);
+      }
+      console.log("TEST: " + res.test);
+      console.log("CAPS: " + util.inspect(res.caps));
+      console.log("----------------");
+      console.log(res.stack);
+    }
+  }
+}
+
+export async function run (opts) {
+  let [testSpecs, numTests, numCaps, needsLocalServer] = buildTestSuite(opts);
   const testStr = numTests + " test" + (numTests !== 1 ? "s" : "");
   const pStr = opts.processes + " process" + (opts.processes !== 1 ? "es": "");
   console.log("Running " + testStr + " in up to " + pStr + " against " +
               opts.configName + " with " + numCaps + " sets of caps");
+  if (needsLocalServer) {
+    runLocalServer();
+  }
   if (opts.verbose || numTests === 1) {
     console.log(util.inspect(_.pluck(testSpecs, 'caps')));
   }
   let results = await runTestSet(testSpecs, opts);
-  let cleanResults = results.filter(r => !r.stack);
   if (numTests > 1) {
-    console.log("\n");
-    console.log("RAN: " + results.length + " // PASSED: " +
-                cleanResults.length + " // FAILED: " + (results.length -
-                cleanResults.length));
-    if (cleanResults.length) {
-      let sum = _.reduce(_.pluck(cleanResults, 'time'), function(m, n) { return m + n; }, 0);
-      let avg = sum / cleanResults.length;
-      let startSum = _.reduce(_.pluck(cleanResults, 'startupTime'), function(m, n) { return m + n; }, 0);
-      let startAvg = startSum / cleanResults.length;
-      console.log("Average successful test run time: " + (avg / 1000).toFixed(2) + "s");
-      console.log("Average successful test startup time: " + (startAvg / 1000).toFixed(2) +
-          "s (" + (startAvg / avg * 100).toFixed(2) + "% of total)");
-    } else {
-      console.log("No statistics available since every test failed");
-    }
-
-    let errs = 0;
-    for (let res of results) {
-      errs++;
-      if (res.stack) {
-        console.log("");
-        console.log("----------------");
-        console.log("Error #" + errs );
-        console.log("----------------");
-        if (res.sessionId) {
-          console.log("SAUCE URL: https://saucelabs.com/tests/" + res.sessionId);
-        }
-        console.log("TEST: " + res.test);
-        console.log("CAPS: " + util.inspect(res.caps));
-        console.log("----------------");
-        console.log(res.stack);
-      }
-    }
+    reportSuite(results);
+  }
+  if (needsLocalServer) {
+    await stopLocalServer();
   }
 }
