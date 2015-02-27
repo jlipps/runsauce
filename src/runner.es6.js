@@ -70,6 +70,7 @@ function fixCaps (testSpec, caps) {
     caps.keepKeyChains = true;
   }
   caps['prevent-requeue'] = true;
+  caps['idle-timeout'] = 150;
   return caps;
 }
 
