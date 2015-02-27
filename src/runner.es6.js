@@ -17,7 +17,8 @@ const APPS = {
 };
 
 const NATIVE_TESTS = ["appium", "ios", "android", "android_long",
-                      "selendroid", "android_hybrid", "ios_hybrid"];
+                      "selendroid", "android_hybrid", "ios_hybrid",
+                      "ios_loc_serv"];
 
 function getTestByType (testType) {
   switch (testType) {
@@ -136,7 +137,7 @@ function fixAppium1Caps (testSpec, caps) {
     if (!caps.platformVersion) {
       caps.platformVersion = '7.1';
     }
-    if (tt === "ios") {
+    if (_.contains(["ios", "ios_loc_serv"], tt)) {
       if (parseFloat(caps.platformVersion < 7.1)) {
         caps.app = APPS.iOS7;
       } else {
@@ -332,10 +333,13 @@ export async function run (opts) {
     testSpec.testName = optSpec.test;
     optSpec.onSauce = onSauce && optSpec.test !== 'js';
     testSpec.caps = getCaps(optSpec);
+    if (testSpec.test.extraCaps) {
+      _.extend(testSpec.caps, testSpec.test.extraCaps);
+    }
     let build = opts.build;
     if (build) {
       build = build.replace("%t", Date.now());
-    } else if (optSpec.onSauce) {
+    } else if (optSpec.onSauce && (opts.tests.length > 1 || runs > 1)) {
       build = `runsauce-${opts.userName}-${Date.now()}`;
     }
     if (build) {

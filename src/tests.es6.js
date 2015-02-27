@@ -71,11 +71,13 @@ tests.webTestHttps = async function (driver, caps) {
 };
 
 tests.webTestHttpsSelfSigned = async function (driver, caps) {
-  caps.keepKeyChains = true;
   let startupTime = await start(driver, caps);
   await driver.get("https://selfsigned.buildslave.saucelabs.com");
   (await driver.title()).should.include("Sauce Labs");
   return startupTime;
+};
+tests.webTestHttpsSelfSigned.extraCaps = {
+  keepKeyChains: true
 };
 
 tests.iosTest = async function (driver, caps) {
@@ -120,15 +122,15 @@ tests.iosHybridTest = async function (driver, caps) {
 };
 
 tests.iosLocServTest = async function (driver, caps) {
-  _.extend(caps, {
-    locationServicesAuthorized: true,
-    locationServicesEnabled: true,
-    bundleId: 'io.appium.TestApp'
-  });
   let startupTime = await start(driver, caps);
   let uiSwitch = await driver.elementByClassName('UIASwitch');
   (await uiSwitch.getAttribute('value')).should.eql(1);
   return startupTime;
+};
+tests.iosLocServTest.extraCaps = {
+  locationServicesAuthorized: true,
+  locationServicesEnabled: true,
+  bundleId: 'io.appium.TestApp'
 };
 
 tests.androidTest = async function (driver, caps) {

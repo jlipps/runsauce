@@ -247,7 +247,7 @@ function mapArgs (args) {
     if (nameSet instanceof Array) {
       [name, shortcutMap] = nameSet;
     }
-    if (args.name || !args[shortcut]) {
+    if ((args[name] && args[name] !== args[shortcut]) || !args[shortcut]) {
       continue;
     }
     if (shortcutMap) {
@@ -268,9 +268,10 @@ function prepareTestSet (opts, tests = null) {
   if (tests === null) {
     // if we have just one test, its info is in 'opts', so get it into a
     // single test array
-    let testArgs = ['browser', 'platform', 'device', 'framework',
-                    'backendVersion', 'orientation', 'version',
-                    'localname', 'wait', 'test'];
+    let testArgs = ['browser', 'b', 'platform', 'p', 'device', 'd',
+                    'framework', 'f', 'backendVersion', 'a', 'orientation',
+                    'o', 'version', 'v', 'localname', 'l', 'wait', 'w',
+                    'test', 't'];
     let singleTest = {};
     for (let testArg of testArgs) {
       if (_.has(opts, testArg)) {
@@ -312,7 +313,7 @@ function prepareTestSet (opts, tests = null) {
   tests = tests.filter(t => {
     let okCombo = true;
     for (let v of _.values(t)) {
-      let restriction = v.split('|')[1];
+      let restriction = v.toString().split('|')[1];
       if (typeof restriction === 'undefined') {
         continue;
       }
@@ -345,7 +346,7 @@ function prepareTestSet (opts, tests = null) {
     return true;
   }).map(t => {
     for (let [k, v] of _.pairs(t)) {
-      t[k] = v.split('|')[0];
+      t[k] = v.toString().split('|')[0];
     }
     return t;
   });
