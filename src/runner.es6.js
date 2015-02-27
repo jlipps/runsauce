@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import util from 'util';
 import Q from 'q';
-import yiewd from 'yiewd';
+import wd from 'wd';
 import { sleep } from 'asyncbox';
 import { tests } from './tests';
 import { testsMap } from './parser';
@@ -70,7 +70,6 @@ function fixCaps (testSpec, caps) {
     caps.keepKeyChains = true;
   }
   caps['prevent-requeue'] = true;
-  caps['idle-timeout'] = 150;
   return caps;
 }
 
@@ -192,13 +191,22 @@ export async function runTest (testSpec, opts, multiRun) {
     if (!multiRun) console.log(msg);
   };
   if (testSpec.onSauce) {
-    driver = yiewd.sauce(opts.userName, opts.accessKey, opts.server,
-                         opts.port);
+    driver = wd.promiseChainRemote(opts.server, opts.port, opts.userName,
+                                   opts.accessKey);
   } else {
-    driver = yiewd.remote(opts.server, opts.port);
+    driver = wd.promiseChainRemote(opts.server, opts.port);
   }
   try {
-    result.startupTime = await testSpec.test(driver, testSpec.caps, opts);
+    if (testSpec.testName === 'js') {
+      result.startupTime = 0;
+    } else {
+      let startTime = Date.now();
+      process.stdout.write('<');
+      await driver.init(testSpec.caps);
+      await driver.setImplicitWaitTimeout(15000);
+      result.startupTime = Date.now() - startTime;
+    }
+    await testSpec.test(driver, testSpec.caps, opts);
     if (testSpec.wait) {
       log(" - Waiting around for 120s...");
       await sleep(120000);

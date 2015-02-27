@@ -7,70 +7,52 @@ function isAppium1 (caps) {
   return caps.appiumVersion && parseFloat(caps.appiumVersion) >= 1;
 }
 
-let start = async function (driver, caps) {
-  let startTime = Date.now();
-  await driver.init(caps);
-  await driver.setImplicitWaitTimeout(15000);
-  return (Date.now() - startTime);
-};
-
-tests.webTest = async function (driver, caps) {
-  let startupTime = await start(driver, caps);
+tests.webTest = async function (driver) {
   await driver.get("http://google.com");
   (await driver.title()).should.include("Google");
-  return startupTime;
 };
 
-tests.longWebTest = async function (driver, caps) {
-  let startupTime = await start(driver, caps);
+tests.longWebTest = async function (driver) {
   for (let i = 0; i < 10; i++) {
     await driver.get("http://google.com");
     (await driver.title()).should.include("Google");
     await driver.sleep(2000);
   }
-  return startupTime;
 };
 
-let localTest = async function (driver, caps, url) {
-  let startupTime = await start(driver, caps);
+let localTest = async function (driver, url) {
   await driver.get(url);
   let h1 = await driver.elementByTagName('h1');
   (await h1.text()).should.include("the server of awesome");
-  return startupTime;
 };
 
 
-tests.webTestConnect = async function (driver, caps) {
-  return (await localTest(driver, caps, "http://localhost:8000"));
+tests.webTestConnect = async function (driver) {
+  await localTest(driver, "http://localhost:8000");
 };
 
-tests.webTestLocalName = async function (driver, caps, opts) {
+tests.webTestLocalName = async function (driver, opts) {
   let host = opts.localname;
   if (host === "" || host === "localhost" || host.indexOf(".local") === -1) {
     throw new Error("Can't run local name test without an interesting hostname");
   }
-  return (await localTest(driver, caps, "http://" + host + ":8000"));
+  await localTest(driver, "http://" + host + ":8000");
 };
 
-tests.webTestHttps = async function (driver, caps) {
-  let startupTime = await start(driver, caps);
+tests.webTestHttps = async function (driver) {
   await driver.get("https://buildslave.saucelabs.com");
   (await driver.title()).should.include("Sauce Labs");
-  return startupTime;
 };
 
-tests.webTestHttpsSelfSigned = async function (driver, caps) {
-  let startupTime = await start(driver, caps);
+tests.webTestHttpsSelfSigned = async function (driver) {
   await driver.get("https://selfsigned.buildslave.saucelabs.com");
   (await driver.title()).should.include("Sauce Labs");
-  return startupTime;
 };
 tests.webTestHttpsSelfSigned.extraCaps = {
   keepKeyChains: true
 };
 
 tests.iosTest = async function (driver, caps) {
-  let startupTime = await start(driver, caps);
   let appium1 = isAppium1(caps);
   let fs;
   if (appium1) {
@@ -92,14 +74,12 @@ tests.iosTest = async function (driver, caps) {
     text = await driver.elementByTagName('staticText').text();
   }
   text.should.equal('9');
-  return startupTime;
 };
 
 tests.iosHybridTest = async function (driver, caps) {
   if (!isAppium1(caps)) {
     throw new Error("Hybrid test only works with Appium 1 caps");
   }
-  let startupTime = await start(driver, caps);
   let ctxs = await driver.contexts();
   ctxs.length.should.be.above(0);
   await driver.context(ctxs[ctxs.length - 1]);
@@ -107,14 +87,11 @@ tests.iosHybridTest = async function (driver, caps) {
   (await driver.title()).should.include("Google");
   await driver.context(ctxs[0]);
   (await driver.source()).should.include("<AppiumAUT>");
-  return startupTime;
 };
 
-tests.iosLocServTest = async function (driver, caps) {
-  let startupTime = await start(driver, caps);
+tests.iosLocServTest = async function (driver) {
   let uiSwitch = await driver.elementByClassName('UIASwitch');
   (await uiSwitch.getAttribute('value')).should.eql(1);
-  return startupTime;
 };
 tests.iosLocServTest.extraCaps = {
   locationServicesAuthorized: true,
@@ -122,18 +99,14 @@ tests.iosLocServTest.extraCaps = {
   bundleId: 'io.appium.TestApp'
 };
 
-tests.androidTest = async function (driver, caps) {
-  let startupTime = await start(driver, caps);
-  await androidCycle(driver, caps);
-  return startupTime;
+tests.androidTest = async function (driver) {
+  await androidCycle(driver);
 };
 
-tests.androidLongTest = async function (driver, caps) {
-  let startupTime = await start(driver, caps);
+tests.androidLongTest = async function (driver) {
   for (let i = 0; i < 15; i++) {
-    await androidCycle(driver, caps);
+    await androidCycle(driver);
   }
-  return startupTime;
 };
 
 async function androidCycle (driver, caps) {
@@ -172,8 +145,7 @@ async function androidCycle (driver, caps) {
   "Show Invisible Contacts (Only)".should.equal(await cb.text());
 }
 
-tests.selendroidTest = async function (driver, caps) {
-  let startupTime = await start(driver, caps);
+tests.selendroidTest = async function (driver) {
   await driver.elementById("buttonStartWebView").click();
   await driver.elementByClassName("android.webkit.WebView");
   await driver.window("WEBVIEW");
@@ -187,11 +159,9 @@ tests.selendroidTest = async function (driver, caps) {
   await driver.sleep(3);
   "This is my way of saying hello".should
     .equal(await driver.elementByTagName("h1").text());
-  return startupTime;
 };
 
-tests.androidHybridTest = async function (driver, caps) {
-  let startupTime = await start(driver, caps);
+tests.androidHybridTest = async function (driver) {
   await driver.sleep(3);
   let ctxs = await driver.contexts();
   await driver.context(ctxs[ctxs.length - 1]);
@@ -199,12 +169,10 @@ tests.androidHybridTest = async function (driver, caps) {
   await el.clear();
   await el.type("Test string");
   "Test string".should.equal(await el.getAttribute('value'));
-  return startupTime;
 };
 
-tests.jsTest = async function (driver, caps, opts){
+tests.jsTest = async function (driver, caps, opts) {
   await runJsUnit(driver, caps, opts);
-  return 0;
 };
 
 export { tests };
