@@ -271,35 +271,36 @@ export async function runTestSet (testSpecs, opts) {
 
   // Helper to get the number of currently-executing tests
   let numTestsInProgress = () => {
-    return _.filter(testsInProgress, x => x !== null).length;
+    return _.values(testsInProgress).filter(x => x !== null).length;
   };
 
   // checkRuns periodically polls which tests are in progress and starts
   // new tests whenever a concurrency slot is free. Once all tests are done
   // it resolves the setCb that we deferred above.
   let checkRuns = () => {
-    // if we have completed fewer tests than our total, see if we can start
-    // more tests
+    // if we have completed fewer tests than our total, we're not done
     if (results.length < numTests) {
-      // if completed + in progress is still less than all the tests, we can
-      // start more
+      // if completed + in progress is less than all the tests, we can
+      // look into startng more
       if (results.length + numTestsInProgress() < numTests) {
         // loop through our possibly-available test slots
-        _.each(testsInProgress, (testPromise, slot) => {
-          let testSpec = testSpecs.shift(); // get the next test
+        for (let [slot, testPromise] of _.pairs(testsInProgress)) {
           if (testPromise === null) {
             // if testPromise is null, that means the slot is free and
             // we can start a new test! So we start it and put the promise
             // in the slot to keep track
-            testsInProgress[slot] = Q(runTest(testSpec, opts, multiRun));
+            let testSpec = testSpecs.shift(); // get the next test
+            let newTestPromise = Q(runTest(testSpec, opts, multiRun));
 
             // Once we're done with this particular test, handle any
             // unexpected errors and update the results array
-            testsInProgress[slot].nodeify((err, res) => {
+            newTestPromise.nodeify((err, res) => {
               if (err) {
                 if (!res || !res.stack) {
                   res = res || {};
                   res.stack = err.stack;
+                  res.test = testSpec.testName;
+                  res.caps = testSpec.caps;
                 }
                 if (multiRun) {
                   process.stdout.write('E');
@@ -307,12 +308,13 @@ export async function runTestSet (testSpecs, opts) {
               }
               testsInProgress[slot] = null;
               results.push(res);
+              // now that we've freed a slot, do checkRuns again
+              checkRuns();
             });
+            testsInProgress[slot] = newTestPromise;
           }
-        });
+        }
       }
-      // whether we started more or not, set the function to poll again
-      setTimeout(checkRuns, 75);
     } else {
       // if we've completed all the tests, resolve the deferred
       setCb.resolve();
@@ -327,6 +329,7 @@ export async function runTestSet (testSpecs, opts) {
 function buildTestSuite (opts) {
   let testSpecs = [];
   let numTests = 0, numCaps = 0, needsLocalServer = false;
+  let buildStartTime = Date.now();
   const onSauce = opts.userName && opts.accessKey;
   for (let optSpec of opts.tests) {
     let testSpec = {};
@@ -343,9 +346,9 @@ function buildTestSuite (opts) {
     }
     let build = opts.build;
     if (build) {
-      build = build.replace("%t", Date.now());
+      build = build.replace("%t", buildStartTime);
     } else if (optSpec.onSauce && (opts.tests.length > 1 || runs > 1)) {
-      build = `runsauce-${opts.userName}-${Date.now()}`;
+      build = `runsauce-${opts.userName}-${buildStartTime}`;
     }
     if (build) {
       testSpec.caps.build = build;
@@ -384,7 +387,7 @@ function reportSuite (results) {
     if (res.stack) {
       console.log("");
       console.log("----------------");
-      console.log("Error #" + errs );
+      console.log("Error for test #" + errs );
       console.log("----------------");
       if (res.sessionId) {
         console.log("SAUCE URL: https://saucelabs.com/tests/" + res.sessionId);
