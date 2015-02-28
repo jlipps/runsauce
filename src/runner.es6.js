@@ -201,9 +201,7 @@ export async function runTest (testSpec, opts, multiRun) {
       result.startupTime = 0;
     } else {
       let startTime = Date.now();
-      process.stdout.write('<');
       await driver.init(testSpec.caps);
-      process.stdout.write('>');
       await driver.setImplicitWaitTimeout(15000);
       result.startupTime = Date.now() - startTime;
     }
@@ -240,8 +238,8 @@ export async function runTest (testSpec, opts, multiRun) {
     log(" - Ending session");
     try {
       await driver.quit();
-      process.stdout.write('Q');
     } catch (e) {
+      result.stack = e;
       log(" - [Error ending session]");
     }
   }
