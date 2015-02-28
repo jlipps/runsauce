@@ -203,6 +203,7 @@ export async function runTest (testSpec, opts, multiRun) {
       let startTime = Date.now();
       process.stdout.write('<');
       await driver.init(testSpec.caps);
+      process.stdout.write('>');
       await driver.setImplicitWaitTimeout(15000);
       result.startupTime = Date.now() - startTime;
     }
@@ -213,19 +214,23 @@ export async function runTest (testSpec, opts, multiRun) {
     }
     if (testSpec.onSauce) {
       log(" - Reporting pass");
-      await driver.reportPass();
+      await driver.sauceJobStatus(true);
     } else {
       log(" - Test passed");
     }
     result.stack = null;
-  } catch(e) {
+  } catch (e) {
     log("");
     log(e.stack);
     log("");
     result.stack = e.stack;
     if (driver.sessionID && testSpec.onSauce) {
       log(" - Reporting failure");
-      await driver.reportFail();
+      try {
+        await driver.sauceJobStatus(false);
+      } catch (e2) {
+        log(" - [Error reporting failure]");
+      }
       result.sessionId = driver.sessionID;
     } else {
       log(" - Test failed");
@@ -233,7 +238,12 @@ export async function runTest (testSpec, opts, multiRun) {
   }
   if (driver.sessionID) {
     log(" - Ending session");
-    await driver.quit();
+    try {
+      await driver.quit();
+      process.stdout.write('Q');
+    } catch (e) {
+      log(" - [Error ending session]");
+    }
   }
   if (multiRun) {
     if (result.stack) {
