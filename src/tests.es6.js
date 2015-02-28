@@ -8,14 +8,14 @@ function isAppium1 (caps) {
 }
 
 tests.webTest = async function (driver) {
-  await driver.get("http://google.com");
-  (await driver.title()).should.include("Google");
+  await driver.get("http://saucelabs.com/test/guinea-pig");
+  (await driver.title()).should.include("I am a page title");
 };
 
 tests.longWebTest = async function (driver) {
   for (let i = 0; i < 10; i++) {
-    await driver.get("http://google.com");
-    (await driver.title()).should.include("Google");
+    await driver.get("http://saucelabs.com/test/guinea-pig");
+    (await driver.title()).should.include("I am a page title");
     await driver.sleep(2000);
   }
 };
