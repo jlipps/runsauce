@@ -111,9 +111,8 @@ export function parse () {
     })
     .options('b', {
       alias: 'browser',
-      default: 'Chrome',
       describe: 'Web browser',
-      demand: true
+      demand: false
     })
     .options('d', {
       alias: 'device',

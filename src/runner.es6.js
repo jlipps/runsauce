@@ -22,6 +22,9 @@ const NATIVE_TESTS = ["appium", "ios", "android", "android_long",
                       "selendroid", "android_hybrid", "ios_hybrid",
                       "ios_loc_serv"];
 
+const WEB_TESTS = ["https", "selfsigned", "connect", "localname", "web_long",
+                   "web", "web_guinea"];
+
 function getTestByType (testType) {
   switch (testType) {
     case 'https': return tests.webTestHttps;
@@ -170,6 +173,13 @@ function fixAppium1Caps (testSpec, caps) {
     if (tt === 'selendroid') {
       caps.automationName = 'Selendroid';
       caps.app = APPS.Selendroid;
+    }
+  }
+  if (_.contains(WEB_TESTS, tt) && !caps.browserName) {
+    if (caps.platformName === "iOS") {
+      caps.browserName = "safari";
+    } else {
+      caps.browserName = "chrome";
     }
   }
   return caps;

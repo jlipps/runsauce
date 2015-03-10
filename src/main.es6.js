@@ -31,7 +31,7 @@ async function main () {
     if (!testfile.tests instanceof Array) {
       exit("You didn't specify any tests in the testfile!");
     }
-    opts.config = opts.config || testfile.c || testfile.config;
+    opts.config = testfile.c || testfile.config;
     opts.build = opts.build || testfile.u || testfile.build;
     opts.processes = testfile.n || testfile.processes || opts.processes;
     tests = testfile.tests;

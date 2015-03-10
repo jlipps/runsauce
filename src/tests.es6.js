@@ -1,8 +1,18 @@
 import { run as runJsUnit } from './js-unit';
 import { retryInterval } from 'asyncbox';
+import wd from 'wd';
 import 'should';
 
+const Asserter = wd.asserters.Asserter;
 let tests = {};
+
+function titleToMatch (match) {
+  return new Asserter(function (driver, cb) {
+    driver.title().then((title) => {
+      title.should.include(match);
+    }).nodeify(cb);
+  });
+}
 
 function isAppium1 (caps) {
   return caps.appiumVersion && parseFloat(caps.appiumVersion) >= 1;
@@ -10,20 +20,20 @@ function isAppium1 (caps) {
 
 tests.webTest = async function (driver) {
   await driver.get("http://saucelabs.com/test/guinea-pig");
-  (await driver.title()).should.include("I am a page title");
+  await driver.waitFor(titleToMatch("I am a page title"), 10000, 1000);
 };
 
 tests.longWebTest = async function (driver) {
   for (let i = 0; i < 10; i++) {
     await driver.get("http://saucelabs.com/test/guinea-pig");
-    (await driver.title()).should.include("I am a page title");
+    await driver.waitFor(titleToMatch("I am a page title"), 10000, 1000);
     await driver.sleep(2000);
   }
 };
 
 tests.guineaPigTest = async function (driver) {
   await driver.get("http://saucelabs.com/test/guinea-pig");
-  (await driver.title()).should.include("I am a page title");
+  await driver.waitFor(titleToMatch("I am a page title"), 10000, 1000);
   await driver.elementById('comments').sendKeys("Hello! I am fine");
   await driver.elementById('submit').click();
   await retryInterval(10, 1000, async () => {
@@ -53,12 +63,12 @@ tests.webTestLocalName = async function (driver, opts) {
 
 tests.webTestHttps = async function (driver) {
   await driver.get("https://buildslave.saucelabs.com");
-  (await driver.title()).should.include("Sauce Labs");
+  await driver.waitFor(titleToMatch("Sauce Labs"), 10000, 1000);
 };
 
 tests.webTestHttpsSelfSigned = async function (driver) {
   await driver.get("https://selfsigned.buildslave.saucelabs.com");
-  (await driver.title()).should.include("Sauce Labs");
+  await driver.waitFor(titleToMatch("Sauce Labs"), 10000, 1000);
 };
 tests.webTestHttpsSelfSigned.extraCaps = {
   keepKeyChains: true
@@ -96,7 +106,7 @@ tests.iosHybridTest = async function (driver, caps) {
   ctxs.length.should.be.above(0);
   await driver.context(ctxs[ctxs.length - 1]);
   await driver.get("http://google.com");
-  (await driver.title()).should.include("Google");
+  await driver.waitFor(titleToMatch("Google"), 10000, 1000);
   await driver.context(ctxs[0]);
   (await driver.source()).should.include("<AppiumAUT>");
 };
