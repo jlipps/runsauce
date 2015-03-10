@@ -204,6 +204,7 @@ export async function runTest (testSpec, opts, multiRun) {
       await driver.init(testSpec.caps);
       await driver.setImplicitWaitTimeout(15000);
       result.startupTime = Date.now() - startTime;
+      result.sessionId = driver.sessionID;
     }
     await testSpec.test(driver, testSpec.caps, opts);
     if (testSpec.wait) {
@@ -212,7 +213,11 @@ export async function runTest (testSpec, opts, multiRun) {
     }
     if (testSpec.onSauce) {
       log(" - Reporting pass");
-      await driver.sauceJobStatus(true);
+      try {
+        await driver.sauceJobStatus(true);
+      } catch (e) {
+        log(" - [Error reporting pass]");
+      }
     } else {
       log(" - Test passed");
     }
@@ -229,7 +234,6 @@ export async function runTest (testSpec, opts, multiRun) {
       } catch (e2) {
         log(" - [Error reporting failure]");
       }
-      result.sessionId = driver.sessionID;
     } else {
       log(" - Test failed");
     }
@@ -350,7 +354,7 @@ function buildTestSuite (opts) {
   const onSauce = opts.userName && opts.accessKey;
   for (let optSpec of opts.tests) {
     let testSpec = {};
-    let runs = optSpec.runs || 1;
+    let runs = parseInt(optSpec.runs || 1, 10);
     if (_.contains(["localname", "connect"], optSpec.test)) {
       needsLocalServer = true;
     }
@@ -380,12 +384,14 @@ function buildTestSuite (opts) {
   return [testSpecs, numTests, numCaps, needsLocalServer];
 }
 
-function reportSuite (results) {
+function reportSuite (results, elapsedMs) {
   let cleanResults = results.filter(r => !r.stack);
   console.log("\n");
   console.log("RAN: " + results.length + " // PASSED: " +
               cleanResults.length + " // FAILED: " + (results.length -
-              cleanResults.length));
+              cleanResults.length) + " (" +
+              ((cleanResults.length / results.length) * 100).toFixed(2) +
+              "% pass rate)");
   if (cleanResults.length) {
     let sum = _.reduce(_.pluck(cleanResults, 'time'), function(m, n) { return m + n; }, 0);
     let avg = sum / cleanResults.length;
@@ -394,6 +400,7 @@ function reportSuite (results) {
     console.log("Average successful test run time: " + (avg / 1000).toFixed(2) + "s");
     console.log("Average successful test startup time: " + (startAvg / 1000).toFixed(2) +
         "s (" + (startAvg / avg * 100).toFixed(2) + "% of total)");
+    console.log("Total run time: " + (elapsedMs / 1000).toFixed(2) + "s");
   } else {
     console.log("No statistics available since every test failed");
   }
@@ -429,9 +436,10 @@ export async function run (opts) {
   if (opts.verbose || numTests === 1) {
     console.log(util.inspect(_.pluck(testSpecs, 'caps')));
   }
+  let start = Date.now();
   let results = await runTestSet(testSpecs, opts);
   if (numTests > 1) {
-    reportSuite(results);
+    reportSuite(results, Date.now() - start);
   }
   if (needsLocalServer) {
     await stopLocalServer();

@@ -271,7 +271,7 @@ function prepareTestSet (opts, tests = null) {
     let testArgs = ['browser', 'b', 'platform', 'p', 'device', 'd',
                     'framework', 'f', 'backendVersion', 'a', 'orientation',
                     'o', 'version', 'v', 'localname', 'l', 'wait', 'w',
-                    'test', 't'];
+                    'test', 't', 'runs', 'r'];
     let singleTest = {};
     for (let testArg of testArgs) {
       if (_.has(opts, testArg)) {
