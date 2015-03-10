@@ -32,7 +32,7 @@
     "test": "./test"
   },
   "dependencies": {
-    "asyncbox": "^1.0.4",
+    "asyncbox": "^1.0.5",
     "babel-runtime": "^4.4.6",
     "es6-mapify": "^1.0.0",
     "lodash": "^3.3.1",

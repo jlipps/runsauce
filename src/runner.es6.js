@@ -37,6 +37,7 @@ function getTestByType (testType) {
     case 'selendroid': return tests.selendroidTest;
     case 'js': return tests.jsTest;
     case 'web_long': return tests.longWebTest;
+    case 'web_guinea': return tests.guineaPigTest;
     default: return tests.webTest;
   }
 }

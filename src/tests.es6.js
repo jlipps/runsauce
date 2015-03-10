@@ -1,4 +1,5 @@
 import { run as runJsUnit } from './js-unit';
+import { retryInterval } from 'asyncbox';
 import 'should';
 
 let tests = {};
@@ -18,6 +19,17 @@ tests.longWebTest = async function (driver) {
     (await driver.title()).should.include("I am a page title");
     await driver.sleep(2000);
   }
+};
+
+tests.guineaPigTest = async function (driver) {
+  await driver.get("http://saucelabs.com/test/guinea-pig");
+  (await driver.title()).should.include("I am a page title");
+  await driver.elementById('comments').sendKeys("Hello! I am fine");
+  await driver.elementById('submit').click();
+  await retryInterval(10, 1000, async () => {
+    let text = await driver.elementById('your_comments').text();
+    text.should.include("Hello! I am fine");
+  });
 };
 
 let localTest = async function (driver, url) {

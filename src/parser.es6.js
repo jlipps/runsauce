@@ -72,6 +72,7 @@ let shortcutHelp = function () {
 const testsMap = {
   web: "Basic web test (default)",
   web_long: "Longer basic web test",
+  web_guinea: "Basic web guinea pig test",
   https: "Basic web test of https site",
   selfsigned: "Basic web test of self-signed https site",
   connect: "Basic web test of locally hosted site",
