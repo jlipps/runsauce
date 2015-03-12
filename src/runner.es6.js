@@ -2,6 +2,7 @@ import _ from 'lodash';
 import util from 'util';
 import Q from 'q';
 import wd from 'wd';
+import stats from 'stats-lite';
 import { sleep } from 'asyncbox';
 import { tests } from './tests';
 import { testsMap } from './parser';
@@ -404,14 +405,20 @@ function reportSuite (results, elapsedMs) {
               ((cleanResults.length / results.length) * 100).toFixed(2) +
               "% pass rate)");
   if (cleanResults.length) {
-    let sum = _.reduce(_.pluck(cleanResults, 'time'), function(m, n) { return m + n; }, 0);
+    let times = _.pluck(cleanResults, 'time').map(t => t / 1000);
+    let startupTimes = _.pluck(cleanResults, 'startupTime').map(t => t / 1000);
+    let sum = _.reduce(times, (m, n) => { return m + n; }, 0);
     let avg = sum / cleanResults.length;
-    let startSum = _.reduce(_.pluck(cleanResults, 'startupTime'), function(m, n) { return m + n; }, 0);
+    let stddev = stats.stdev(times);
+    let startSum = _.reduce(startupTimes, (m, n) => { return m + n; }, 0);
     let startAvg = startSum / cleanResults.length;
-    console.log("Average successful test run time: " + (avg / 1000).toFixed(2) + "s");
-    console.log("Average successful test startup time: " + (startAvg / 1000).toFixed(2) +
-        "s (" + (startAvg / avg * 100).toFixed(2) + "% of total)");
-    console.log("Total run time: " + (elapsedMs / 1000).toFixed(2) + "s");
+    let startStddev = stats.stdev(startupTimes);
+    console.log(`Average successful test run time: ${avg.toFixed(2)}s\n` +
+                `  Std Dev: ${stddev.toFixed(2)}\n` +
+                `Average successful test startup time: ${startAvg.toFixed(2)}\n` +
+                `  Std Dev: ${startStddev.toFixed(2)}\n` +
+                `  % of test time: ${(startAvg / avg * 100).toFixed(2)}%\n` +
+                `Total run time: ${(elapsedMs / 1000).toFixed(2)}s`);
   } else {
     console.log("No statistics available since every test failed");
   }

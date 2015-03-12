@@ -9,7 +9,8 @@ let tests = {};
 function titleToMatch (match) {
   return new Asserter(function (driver, cb) {
     driver.title().then((title) => {
-      title.should.include(match);
+      title.should.contain(match);
+      return true;
     }).nodeify(cb);
   });
 }
