@@ -195,12 +195,12 @@ function fixAppiumCaps (testSpec, caps, onSauce) {
   }
 }
 
-export async function runTest (testSpec, opts, multiRun) {
+export async function runTest (testSpec, opts, shouldLog, multiRun, statusFn) {
   let start = Date.now();
   let result = {caps: testSpec.caps, test: testSpec.testName};
   let driver;
   let log = msg => {
-    if (!multiRun) console.log(msg);
+    if (shouldLog && !multiRun) console.log(msg);
   };
   if (testSpec.onSauce) {
     driver = wd.promiseChainRemote(opts.server, opts.port, opts.userName,
@@ -259,12 +259,10 @@ export async function runTest (testSpec, opts, multiRun) {
       log(" - [Error ending session]");
     }
   }
-  if (multiRun) {
-    if (result.stack) {
-      process.stdout.write('F');
-    } else {
-      process.stdout.write('.');
-    }
+  if (result.stack) {
+    statusFn({test: 'F'});
+  } else {
+    statusFn({test: '.'});
   }
   result.time = (Date.now() - start);
   let testTime = result.time - result.startupTime;
@@ -283,15 +281,14 @@ export async function runTest (testSpec, opts, multiRun) {
   return result;
 }
 
-export async function runTestSet (testSpecs, opts) {
+export async function runTestSet (testSpecs, opts, log, statusFn) {
   let results = [];
   let numTests = testSpecs.length;
   let procs = opts.processes > numTests ? numTests : opts.processes;
   const multiRun = testSpecs.length > 1;
-  if (multiRun) {
+  if (log && multiRun) {
     console.log("");
   }
-
   // keep a map of tests in progress, this will be as long as our processes.
   // As we add and remove tests slots will be filled and emptied in this map.
   let testsInProgress = {};
@@ -323,7 +320,7 @@ export async function runTestSet (testSpecs, opts) {
             // we can start a new test! So we start it and put the promise
             // in the slot to keep track
             let testSpec = testSpecs.shift(); // get the next test
-            let newTestPromise = Q(runTest(testSpec, opts, multiRun));
+            let newTestPromise = Q(runTest(testSpec, opts, log, multiRun, statusFn));
 
             // Once we're done with this particular test, handle any
             // unexpected errors and update the results array
@@ -336,7 +333,7 @@ export async function runTestSet (testSpecs, opts) {
                   res.caps = testSpec.caps;
                 }
                 if (multiRun) {
-                  process.stdout.write('E');
+                  statusFn({test: 'E'});
                 }
               }
               testsInProgress[slot] = null;
@@ -396,14 +393,20 @@ function buildTestSuite (opts) {
   return [testSpecs, numTests, numCaps, needsLocalServer];
 }
 
-function reportSuite (results, elapsedMs) {
+function reportSuite (results, elapsedMs, doLog = true) {
   let cleanResults = results.filter(r => !r.stack);
-  console.log("\n");
-  console.log("RAN: " + results.length + " // PASSED: " +
-              cleanResults.length + " // FAILED: " + (results.length -
-              cleanResults.length) + " (" +
-              ((cleanResults.length / results.length) * 100).toFixed(2) +
-              "% pass rate)");
+  let passed = cleanResults.length;
+  let failed = results.length - passed;
+  let passRate = (passed / results.length) * 100;
+  let log = (msg) => {
+    if (doLog && results.length > 1) {
+      console.log(msg);
+    }
+  };
+  log("\n");
+  log("RAN: " + results.length + " // PASSED: " + passed + " // FAILED: " +
+      failed + " (" + passRate.toFixed(2) + "% pass rate)");
+  let report = {results, passed, failed, passRate: passRate / 100};
   if (cleanResults.length) {
     let times = _.pluck(cleanResults, 'time').map(t => t / 1000);
     let startupTimes = _.pluck(cleanResults, 'startupTime').map(t => t / 1000);
@@ -413,53 +416,72 @@ function reportSuite (results, elapsedMs) {
     let startSum = _.reduce(startupTimes, (m, n) => { return m + n; }, 0);
     let startAvg = startSum / cleanResults.length;
     let startStddev = stats.stdev(startupTimes);
-    console.log(`Average successful test run time: ${avg.toFixed(2)}s\n` +
-                `  Std Dev: ${stddev.toFixed(2)}\n` +
-                `Average successful test startup time: ${startAvg.toFixed(2)}\n` +
-                `  Std Dev: ${startStddev.toFixed(2)}\n` +
-                `  % of test time: ${(startAvg / avg * 100).toFixed(2)}%\n` +
-                `Total run time: ${(elapsedMs / 1000).toFixed(2)}s`);
+    log(`Average successful test run time: ${avg.toFixed(2)}s\n` +
+        `  Std Dev: ${stddev.toFixed(2)}\n` +
+        `Average successful test startup time: ${startAvg.toFixed(2)}\n` +
+        `  Std Dev: ${startStddev.toFixed(2)}\n` +
+        `  % of test time: ${(startAvg / avg * 100).toFixed(2)}%\n` +
+        `Total run time: ${(elapsedMs / 1000).toFixed(2)}s`);
+    _.extend(report, {testTimeAvg: avg, testTimeStdDev: stddev,
+                      startTimeAvg: startAvg, startTimeStdDev: startStddev,
+                      totalSuiteTime: elapsedMs / 1000});
   } else {
-    console.log("No statistics available since every test failed");
+    log("No statistics available since every test failed");
   }
 
   let errs = 0;
   for (let res of results) {
     errs++;
     if (res.stack) {
-      console.log("");
-      console.log("----------------");
-      console.log("Error for test #" + errs );
-      console.log("----------------");
+      log("");
+      log("----------------");
+      log("Error for test #" + errs );
+      log("----------------");
       if (res.sessionId) {
-        console.log("SAUCE URL: https://saucelabs.com/tests/" + res.sessionId);
+        log("SAUCE URL: https://saucelabs.com/tests/" + res.sessionId);
       }
-      console.log("TEST: " + res.test);
-      console.log("CAPS: " + util.inspect(res.caps));
-      console.log("----------------");
-      console.log(res.stack);
+      log("TEST: " + res.test);
+      log("CAPS: " + util.inspect(res.caps));
+      log("----------------");
+      log(res.stack);
     }
   }
+  return report;
 }
 
-export async function run (opts) {
+export async function run (opts, log = true, statusFn = null) {
   let [testSpecs, numTests, numCaps, needsLocalServer] = buildTestSuite(opts);
   const testStr = numTests + " test" + (numTests !== 1 ? "s" : "");
   const pStr = opts.processes + " process" + (opts.processes !== 1 ? "es": "");
-  console.log("Running " + testStr + " in up to " + pStr + " against " +
-              opts.configName + " with " + numCaps + " sets of caps");
+  if (!statusFn) {
+    if (numTests > 1) {
+      statusFn = (msg) => {
+        if (msg.test) {
+          process.stdout.write(msg.test);
+        }
+      };
+    } else {
+      statusFn = () => {};
+    }
+  }
+
+  if (log) {
+    console.log("Running " + testStr + " in up to " + pStr + " against " +
+                opts.configName + " with " + numCaps + " sets of caps");
+  }
+  statusFn({numTests});
   if (needsLocalServer) {
     runLocalServer();
   }
   if (opts.verbose || numTests === 1) {
-    console.log(util.inspect(_.pluck(testSpecs, 'caps')));
+    if (log) {
+      console.log(util.inspect(_.pluck(testSpecs, 'caps')));
+    }
   }
   let start = Date.now();
-  let results = await runTestSet(testSpecs, opts);
-  if (numTests > 1) {
-    reportSuite(results, Date.now() - start);
-  }
+  let results = await runTestSet(testSpecs, opts, log, statusFn);
   if (needsLocalServer) {
     await stopLocalServer();
   }
+  return reportSuite(results, Date.now() - start, log);
 }

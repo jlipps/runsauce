@@ -5,14 +5,20 @@ import { parse as parseOpts, testsMap, mapArgs,
 import { run } from './runner';
 import { interactiveSetup, getConfig } from './setup';
 
-let opts = parseOpts();
 
 function exit (msg, code = 1) {
   console.log(msg);
   process.exit(code);
 }
 
-async function main () {
+export async function runsauce (opts = null, log = true, statusFn = null) {
+  if (!opts) {
+    opts = parseOpts();
+  } else if (opts.testsuite) {
+    // do nothing
+  } else {
+    opts = parseOpts(opts);
+  }
   let testfile, tests = null;
   if (_.has(opts, 'setup') && opts.setup) {
     await interactiveSetup();
@@ -22,11 +28,15 @@ async function main () {
   if (config === null) {
     exit("Could not load config file, please run with --setup");
   }
-  if (opts.testfile) {
-    try {
-      testfile = require(path.resolve(process.cwd(), opts.testfile));
-    } catch (e) {
-      exit(`You specified "-i ${opts.testfile}" but we couldn't open it!`);
+  if (opts.testsuite || opts.testfile) {
+    if (opts.testsuite) {
+      testfile = opts.testsuite;
+    } else {
+      try {
+        testfile = require(path.resolve(process.cwd(), opts.testfile));
+      } catch (e) {
+        exit(`You specified "-i ${opts.testfile}" but we couldn't open it!`);
+      }
     }
     if (!testfile.tests instanceof Array) {
       exit("You didn't specify any tests in the testfile!");
@@ -46,19 +56,18 @@ async function main () {
       exit("Test type '" + test + "' is not valid, run --tests");
     }
   }
-  await run(_.extend({
+  return run(_.extend({
     configName: opts.config,
     tests: opts.tests,
     processes: opts.processes,
     verbose: opts.verbose,
     build: opts.build,
-  }, config[opts.config]));
+  }, config[opts.config]), log, statusFn);
 }
 
-export function runsauce () {
-  main().then(() => {}, err => {
+export function cli () {
+  runsauce().then(() => {}, err => {
     console.error(err.stack);
     process.exit(1);
   });
 }
-

@@ -95,7 +95,11 @@ let testsHelp = function() {
   return t;
 };
 
-export function parse () {
+export function parse (argOverride = null) {
+  let oldArgv = process.argv;
+  if (argOverride) {
+    process.argv = argOverride;
+  }
   let optimistObj = optimist
     .options('c', {
       alias: 'config',
@@ -224,6 +228,9 @@ export function parse () {
     process.exit(0);
   }
 
+  if (argOverride) {
+    process.argv = oldArgv;
+  }
   return args;
 }
 

@@ -15,5 +15,5 @@ export function run () {
 
 export async function stop () {
   console.log(" - Shutting down simple web server");
-  await Q.nfcall(server.close);
+  await Q.ninvoke(server, 'close');
 }
