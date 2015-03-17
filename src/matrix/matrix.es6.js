@@ -14,10 +14,9 @@ function getMatrixTable (m, detail = false) {
   }
   colHeaders.sort();
   rowHeaders.sort();
-  let t = new Table();
-  t.push(colHeaders);
+  let t = new Table({head: [""].concat(colHeaders.map(c => `iOS ${c}`))});
   for (let r of rowHeaders) {
-    let row = [`Appium ${r}`];
+    let row = [];
     for (let c of colHeaders) {
       let support;
       if (_.isUndefined(m[r][c])) {
@@ -35,13 +34,10 @@ function getMatrixTable (m, detail = false) {
       }
       row.push(support);
     }
-    t.push(row);
+    let rowObj = {};
+    rowObj[`Appium ${r}`] = row;
+    t.push(rowObj);
   }
-  let newColHeaders = [""];
-  for (let c of t[0]) {
-    newColHeaders.push(`iOS ${c}`);
-  }
-  t[0] = newColHeaders;
   return t;
 }
 
