@@ -6,6 +6,7 @@ import { asyncify } from 'asyncbox';
 import Q from 'q';
 import fs from 'fs';
 import util from 'util';
+import Table from 'cli-table';
 import _ from 'lodash';
 
 let numTests = 0;
@@ -54,6 +55,7 @@ async function main () {
   console.log("Writing json data to " + tempFile);
   await Q.nfcall(fs.writeFile, tempFile, JSON.stringify(res));
   console.log(res);
+  printMatrix(m);
 }
 
 async function cheat () {
@@ -61,16 +63,59 @@ async function cheat () {
   res = JSON.parse(res.toString());
   let m = matrix(res.results);
   console.log("Support matrix:");
+  printMatrix(m);
+}
+
+function printMatrix (m) {
+  let rowHeaders = _.keys(m);
+  let colHeaders = [];
   for (let a of _.keys(m)) {
     for (let v of _.keys(m[a])) {
+      if (!_.contains(colHeaders, v)) {
+        colHeaders.push(v);
+      }
+    }
+  }
+  let t = new Table();
+  t.push(colHeaders);
+  for (let r of rowHeaders) {
+    let row = [`Appium ${r}`];
+    for (let c of colHeaders) {
       let support;
-      if (m[a][v].all === 1) {
+      let ok_combos = [], bad_combos = [], problem_combos = [];
+      console.log(m[r][c]);
+      if (m[r][c].all === 1) {
         support = 'YES';
-      } else if (m[a][v].all === 0) {
+      } else if (m[r][c].all === 0) {
         support = 'NO';
       } else {
         support = 'PARTIAL';
+        for (let [label, stat] of _.pairs(m[r][c])) {
+          if (label === 'all') {
+            continue;
+          }
+          if (stat === 1) {
+            ok_combos.push(label);
+          } else if (stat === 0) {
+            bad_combos.push(label);
+          } else {
+            problem_combos.push(label);
+          }
+        }
       }
+      row.push(support);
+    }
+    t.push(row);
+  }
+  let newColHeaders = [""];
+  for (let c of t[0]) {
+    newColHeaders.push(`iOS ${c}`);
+  }
+  t[0] = newColHeaders;
+  console.log(t.toString());
+  process.exit();
+  for (let a of _.keys(m)) {
+    for (let v of _.keys(m[a])) {
       console.log(`Appium ${a} / iOS ${v}: ${support}`);
     }
   }
@@ -96,15 +141,14 @@ function matrix (runs) {
     }
     mat[a][v][label].push(s);
   }
-  for (let [a, vers] of _.pairs(mat)) {
-    for (let [v, tests] of _.pairs(vers)) {
-      for (let [label, stats] of _.pairs(tests)) {
-        tests[label] = avg(stats);
+  for (let [, vers] of _.pairs(mat)) {
+    for (let [, tests] of _.pairs(vers)) {
+      for (let [tLabel, stats] of _.pairs(tests)) {
+        tests[tLabel] = avg(stats);
       }
       tests.all = avg(_.values(tests));
     }
   }
-  console.log(util.inspect(mat, {depth: 5}));
   return mat;
 }
 
