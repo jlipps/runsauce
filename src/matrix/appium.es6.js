@@ -8,10 +8,9 @@ import optimist from 'optimist';
 
 import { getStatusHandler } from './utils';
 import { runsauce } from '../main';
-import { matrix, printMatrix } from './matrix';
+import { matrix, printMatrix, printMatrixHTML } from './matrix';
 
 const CONCURRENCY = 20;
-const tempFile = '/Users/jlipps/Desktop/sauce_matrix.json';
 
 function parse () {
   let optimistObj = optimist
@@ -19,6 +18,12 @@ function parse () {
       alias: 'detail',
       default: false,
       describe: 'Show detail view of failing tests',
+      demand: false
+    })
+    .options('f', {
+      alias: 'file',
+      default: null,
+      describe: 'File to store raw results',
       demand: false
     })
     .boolean(['detail']);
@@ -52,18 +57,21 @@ async function main () {
   //opts.tests = [basicTestOpts];
 
   let res = await runsauce({testsuite: opts}, false, getStatusHandler(CONCURRENCY));
-  console.log("Writing json data to " + tempFile);
-  await Q.nfcall(fs.writeFile, tempFile, JSON.stringify(res));
+  if (config.file) {
+    console.log("Writing json data to " + config.file);
+    await Q.nfcall(fs.writeFile, config.file, JSON.stringify(res));
+  }
   let m = matrix(res.results);
   printMatrix(m, config.detail);
 }
 
 async function cheat () {
   let config = parse();
-  let res = await Q.nfcall(fs.readFile, tempFile);
+  let res = await Q.nfcall(fs.readFile, config.file);
   res = JSON.parse(res.toString());
   let m = matrix(res.results);
-  printMatrix(m, config.detail);
+  //printMatrix(m, config.detail);
+  printMatrixHTML(m, config.detail);
 }
 
 export function cli () {

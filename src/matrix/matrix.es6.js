@@ -1,8 +1,9 @@
 import Table from 'cli-table';
 import _ from 'lodash';
 import { avg } from './utils';
+import { htmlTemplate, tableTemplate } from './templates';
 
-function getMatrixTable (m, detail = false) {
+function getMatrixTable (m, detail = false, cli = true) {
   let rowHeaders = _.keys(m);
   let colHeaders = [];
   for (let a of _.keys(m)) {
@@ -28,6 +29,9 @@ function getMatrixTable (m, detail = false) {
       } else {
         if (detail) {
           support = getInnerTable(m[r][c]);
+          if (cli) {
+            support = support.toString();
+          }
         } else {
           support = m[r][c].all.toFixed(2).toString();
         }
@@ -78,7 +82,7 @@ function getInnerTable (combo) {
   for (let [i, h] of _.pairs(innerTable.options.head)) {
     innerTable.options.head[i] = h.replace(' Simulator', '');
   }
-  return innerTable.toString();
+  return innerTable;
 }
 
 export function matrix (runs) {
@@ -124,9 +128,34 @@ export function printMatrix (m, detail) {
   console.log(t.toString());
 }
 
-export function printMatrixHTML (m) {
-  let t = getMatrixTable(m);
-  let html = '';
+function rowFromCrossTableRowObj (rowObj) {
+  let rowPairs = _.pairs(rowObj)[0];
+  return [rowPairs[0]].concat(rowPairs[1]);
+}
+
+export function printMatrixHTML (m, detail) {
+  let t = getMatrixTable(m, detail, false);
+  let colHeaders = t.options.head;
+  let rows = [colHeaders];
+  for (let rowObj of t) {
+    let newRow = [];
+    let row = rowFromCrossTableRowObj(rowObj);
+    for (let cell of row) {
+      if (cell instanceof Table) {
+        let innerColHeaders = cell.options.head;
+        let innerRows = [innerColHeaders];
+        for (let innerRow of cell) {
+          innerRows.push(rowFromCrossTableRowObj(innerRow));
+        }
+        newRow.push(tableTemplate({klass: 'innerTable', rows: innerRows}));
+      } else {
+        newRow.push(cell);
+      }
+    }
+    rows.push(newRow);
+  }
+  let outerTable = tableTemplate({klass: 'outerTable', rows});
+  let html = htmlTemplate({table: outerTable});
   console.log(html);
 }
 
