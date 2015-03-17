@@ -1,72 +1,8 @@
-// demonstration of how to use runsauce as a library to build your own custom
-// reporting tool
-
-import { runsauce } from './main';
-import { asyncify } from 'asyncbox';
-import Q from 'q';
-import fs from 'fs';
 import Table from 'cli-table';
 import _ from 'lodash';
+import { avg } from './utils';
 
-let numTests = 0;
-let testsComplete = 0;
-const CONCURRENCY = 20;
-const tempFile = '/Users/jlipps/Desktop/sauce_matrix.json';
-
-function onStatus (s) {
-  let breakOn = 80;
-  if (s.test) {
-    if (testsComplete % breakOn === 0) {
-      process.stdout.write("\n" + testsComplete + "/" + numTests + " ");
-    }
-    testsComplete++;
-    process.stdout.write(s.test);
-  } else if (s.numTests) {
-    numTests = s.numTests;
-    console.log(`Running ${numTests} tests in ${CONCURRENCY} processes`);
-  }
-}
-
-async function main () {
-  console.log("Running Appium support matrix");
-  let opts = {c: 'prod', u: 'appium-matrix-%t', n: CONCURRENCY};
-  let basicTestOpts = {};
-  let deviceTestOpts = {};
-  let appiumVers = ['1.0.0', '1.1.0', '1.2.0', '1.2.1', '1.2.2',
-                    '1.2.4', '1.3.1', '1.3.3', '1.3.4', '1.3.6'];
-  //appiumVers = ['1.3.6'];
-  let iosVers = ['6.1', '7.0', '7.1', '8.0|a>=1.3.1', '8.1|a>=1.3.1',
-                 '8.2|a>=1.3.1'];
-  //iosVers = ['7.1', '8.1'];
-  basicTestOpts.a = deviceTestOpts.a = appiumVers;
-  basicTestOpts.r = deviceTestOpts.r = 3;
-  basicTestOpts.v = deviceTestOpts.v = iosVers;
-  basicTestOpts.t = ['ios', 'web_guinea', 'selfsigned', 'connect', 'ios_loc_serv'];
-  //basicTestOpts.t = ['ios', 'web_guinea'];
-  basicTestOpts.d = ['ip', 'ipa'];
-  //basicTestOpts.d = ['ip', 'ipa'];
-  deviceTestOpts.t = ['ios_loc_serv'];
-  deviceTestOpts.d = ['iPhone Retina (3.5-inch)|v=7.0', 'iPhone 5s|v=7.1',
-                      'iPad 2|v=7.1', 'iPhone 6 Plus|v>=8.0',
-                      'iPad Air|v>=8.0'];
-  opts.tests = [basicTestOpts, deviceTestOpts];
-  //opts.tests = [basicTestOpts];
-
-  let res = await runsauce({testsuite: opts}, false, onStatus);
-  console.log("Writing json data to " + tempFile);
-  await Q.nfcall(fs.writeFile, tempFile, JSON.stringify(res));
-  let m = matrix(res.results);
-  printMatrix(m);
-}
-
-async function cheat () {
-  let res = await Q.nfcall(fs.readFile, tempFile);
-  res = JSON.parse(res.toString());
-  let m = matrix(res.results);
-  printMatrix(m);
-}
-
-function printMatrix (m) {
+function getMatrixTable (m) {
   let rowHeaders = _.keys(m);
   let colHeaders = [];
   for (let a of _.keys(m)) {
@@ -98,11 +34,10 @@ function printMatrix (m) {
     newColHeaders.push(`iOS ${c}`);
   }
   t[0] = newColHeaders;
-  console.log(t.toString());
+  return t;
 }
 
 function getInnerTable (combo) {
-  let support = 'PARTIAL';
   let tests = [], devices = [];
   let avgForSet = "";
   for (let [test, deviceObjs] of _.pairs(combo)) {
@@ -140,7 +75,7 @@ function getInnerTable (combo) {
   return innerTable.toString();
 }
 
-function matrix (runs) {
+export function matrix (runs) {
   let mat = {};
   for (let r of runs) {
     const a = r.caps.appiumVersion;
@@ -178,16 +113,14 @@ function matrix (runs) {
   return mat;
 }
 
-function sum (arr) {
-  return _.reduce(arr, (m, n) => { return m + n; }, 0);
+export function printMatrix (m) {
+  let t = getMatrixTable(m);
+  console.log(t.toString());
 }
 
-function avg (arr) {
-  if (arr.length > 0) {
-    return sum(arr) / arr.length;
-  }
-  return 0;
+export function printMatrixHTML (m) {
+  let t = getMatrixTable(m);
+  let html = '';
+  console.log(html);
 }
 
-asyncify(main);
-//asyncify(cheat);

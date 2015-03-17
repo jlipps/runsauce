@@ -13,7 +13,7 @@ var exitOnError = false;
 
 gulp.task("transpile", function () {
   var mapPath = null;
-  return gulp.src("src/*.js")
+  return gulp.src("src/**/*.js")
     .pipe(rename(function (path) {
       path.basename = path.basename.replace(".es6", "");
       mapPath = path.basename + ".map";
@@ -46,7 +46,7 @@ gulp.task('watch-build', function() {
 
 gulp.task('watch', function () {
   exitOnError = true;
-  gulp.watch(['src/*.js'], ['watch-build']);
+  gulp.watch(['src/**/*.js'], ['watch-build']);
   gulp.watch('gulpfile.js', ['clear-terminal','kill-gulp']);
 });
 
