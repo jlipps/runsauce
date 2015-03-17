@@ -2,7 +2,7 @@ import Table from 'cli-table';
 import _ from 'lodash';
 import { avg } from './utils';
 
-function getMatrixTable (m) {
+function getMatrixTable (m, detail = false) {
   let rowHeaders = _.keys(m);
   let colHeaders = [];
   for (let a of _.keys(m)) {
@@ -12,18 +12,26 @@ function getMatrixTable (m) {
       }
     }
   }
+  colHeaders.sort();
+  rowHeaders.sort();
   let t = new Table();
   t.push(colHeaders);
   for (let r of rowHeaders) {
     let row = [`Appium ${r}`];
     for (let c of colHeaders) {
       let support;
-      if (m[r][c].all === 1) {
+      if (_.isUndefined(m[r][c])) {
+        support = "\u2014";
+      } else if (m[r][c].all === 1) {
         support = '\u2713';
       } else if (m[r][c].all === 0) {
         support = '\u2717';
       } else {
-        support = getInnerTable(m[r][c]);
+        if (detail) {
+          support = getInnerTable(m[r][c]);
+        } else {
+          support = m[r][c].all.toFixed(2).toString();
+        }
       }
       row.push(support);
     }
@@ -58,7 +66,9 @@ function getInnerTable (combo) {
     let row = [];
     for (let d of devices) {
       let val = combo[t][d];
-      if (val === 1) {
+      if (_.isUndefined(val)) {
+        row.push("\u2014");
+      } else if (val === 1) {
         row.push("\u2713");
       } else if (val === 0) {
         row.push("\u2717");
@@ -113,8 +123,8 @@ export function matrix (runs) {
   return mat;
 }
 
-export function printMatrix (m) {
-  let t = getMatrixTable(m);
+export function printMatrix (m, detail) {
+  let t = getMatrixTable(m, detail);
   console.log(t.toString());
 }
 
