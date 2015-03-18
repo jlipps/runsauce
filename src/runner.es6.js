@@ -146,10 +146,11 @@ function fixAppium1Caps (testSpec, caps) {
       caps.platformVersion = '7.1';
     }
     if (_.contains(["ios", "ios_loc_serv"], tt)) {
+      // just use 7.1 app for all tests, it has the right buttons
       if (parseFloat(caps.platformVersion) == 6.1) {
         caps.app = APPS.iOS71;
       } else if (parseFloat(caps.platformVersion) < 7.1) {
-        caps.app = APPS.iOS7;
+        caps.app = APPS.iOS71;
       } else {
         caps.app = APPS.iOS71;
       }
@@ -461,6 +462,12 @@ export async function run (opts, log = true, statusFn = null) {
       statusFn = (msg) => {
         if (msg.test) {
           process.stdout.write(msg.test);
+        } else if (msg.localServer) {
+          if (msg.localServer === "starting") {
+            console.log(" - Starting simple web server");
+          } else if (msg.localServer === "stopping") {
+            console.log(" - Stopping simple web server");
+          }
         }
       };
     } else {
@@ -474,7 +481,9 @@ export async function run (opts, log = true, statusFn = null) {
   }
   statusFn({numTests});
   if (needsLocalServer) {
+    statusFn({localServer: 'starting'});
     runLocalServer();
+    statusFn({localServer: 'started'});
   }
   if (opts.verbose || numTests === 1) {
     if (log) {
@@ -484,7 +493,9 @@ export async function run (opts, log = true, statusFn = null) {
   let start = Date.now();
   let results = await runTestSet(testSpecs, opts, log, statusFn);
   if (needsLocalServer) {
+    statusFn({localServer: 'stopping'});
     await stopLocalServer();
+    statusFn({localServer: 'stopped'});
   }
   return reportSuite(results, Date.now() - start, log);
 }

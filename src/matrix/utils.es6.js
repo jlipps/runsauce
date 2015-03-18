@@ -17,12 +17,14 @@ export function getStatusHandler (concurrency) {
       }
       testsComplete++;
       process.stdout.write(s.test);
+      if (testsComplete === numTests) {
+        process.stdout.write("\n");
+      }
     } else if (s.numTests) {
       numTests = s.numTests;
       console.log(`Running ${numTests} tests in ${concurrency} processes`);
-    }
-    if (testsComplete === numTests) {
-      process.stdout.write("\n");
+    } else if (s.localServer) {
+      console.log(`[Local web server: ${s.localServer}]`);
     }
   };
 }
