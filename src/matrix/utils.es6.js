@@ -7,7 +7,13 @@ export function getStatusHandler (concurrency) {
     let breakOn = 80;
     if (s.test) {
       if (testsComplete % breakOn === 0) {
-        process.stdout.write("\n" + testsComplete + "/" + numTests + " ");
+        let padding = numTests.toString().length - testsComplete.toString().length;
+        let paddingStr = "";
+        for (let i = 0; i < padding; i++) {
+          paddingStr += " ";
+        }
+        process.stdout.write("\n" + paddingStr + testsComplete + "/" +
+                             numTests + " ");
       }
       testsComplete++;
       process.stdout.write(s.test);
