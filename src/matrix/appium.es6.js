@@ -26,13 +26,30 @@ function parse () {
       describe: 'File to store raw results',
       demand: false
     })
-    .boolean(['detail']);
+    .options('r', {
+      alias: 'runs',
+      default: 3,
+      describe: 'Number of runs for each test',
+      demand: false
+    })
+    .options('s', {
+      alias: 'skip',
+      default: false,
+      describe: 'Skip actual test run and use results file',
+      demand: false
+    })
+    .option('h', {
+      alias: 'html',
+      default: false,
+      describe: 'Output html table instead of CLI table',
+      demand: false
+    })
+    .boolean(['detail', 'skip', 'html']);
   return optimistObj.argv;
 }
 
-async function main () {
+async function main (config) {
   console.log("Running Appium support matrix");
-  let config = parse();
   let opts = {c: 'prod', u: 'appium-matrix-%t', n: CONCURRENCY};
   let basicTestOpts = {};
   let deviceTestOpts = {};
@@ -43,7 +60,7 @@ async function main () {
                  '8.2|a>=1.3.6'];
   //iosVers = ['7.1', '8.1'];
   basicTestOpts.a = deviceTestOpts.a = appiumVers;
-  basicTestOpts.r = deviceTestOpts.r = 3;
+  basicTestOpts.r = deviceTestOpts.r = config.runs;
   basicTestOpts.v = deviceTestOpts.v = iosVers;
   basicTestOpts.t = ['ios', 'web_guinea', 'selfsigned', 'connect', 'ios_loc_serv'];
   //basicTestOpts.t = ['ios', 'web_guinea'];
@@ -62,19 +79,29 @@ async function main () {
     await Q.nfcall(fs.writeFile, config.file, JSON.stringify(res));
   }
   let m = matrix(res.results);
-  printMatrix(m, config.detail);
+  print(config.html, m, config.detail);
 }
 
-async function cheat () {
-  let config = parse();
+function print (html, m, detail) {
+  if (html) {
+    printMatrixHTML(m, detail);
+  } else {
+    printMatrix(m, detail);
+  }
+}
+
+async function skip (config) {
   let res = await Q.nfcall(fs.readFile, config.file);
   res = JSON.parse(res.toString());
   let m = matrix(res.results);
-  //printMatrix(m, config.detail);
-  printMatrixHTML(m, config.detail);
+  print(config.html, m, config.detail);
 }
 
 export function cli () {
-  //asyncify(main);
-  asyncify(cheat);
+  let config = parse();
+  if (config.skip) {
+    asyncify(skip, config);
+  } else {
+    asyncify(main, config);
+  }
 }
