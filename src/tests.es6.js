@@ -83,8 +83,19 @@ tests.iosTest = async function (driver, caps) {
   } else {
     fs = await driver.elementsByTagName('textField');
   }
-  await fs[0].sendKeys('4');
-  await fs[1].sendKeys('5');
+  // some early versions of appium didn't filter out the extra text fields
+  // that UIAutomation started putting in, so make the test sensitive
+  // to that
+  let firstField = fs[0], secondField;
+  if (fs.length === 2) {
+    secondField = fs[1];
+  } else if (fs.length === 4) {
+    secondField = fs[2];
+  } else {
+    throw new Error("Got strange number of fields in testapp: " + fs.length);
+  }
+  await firstField.sendKeys('4');
+  await secondField.sendKeys('5');
   if (appium1) {
     await driver.elementByClassName("UIAButton").click();
   } else {
