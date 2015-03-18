@@ -146,8 +146,8 @@ function fixAppium1Caps (testSpec, caps) {
       caps.platformVersion = '7.1';
     }
     if (_.contains(["ios", "ios_loc_serv"], tt)) {
-      if (parseFloat(caps.platformVersion) < 7.0) {
-        caps.app = APPS.iOS61;
+      if (parseFloat(caps.platformVersion) == 6.1) {
+        caps.app = APPS.iOS71;
       } else if (parseFloat(caps.platformVersion) < 7.1) {
         caps.app = APPS.iOS7;
       } else {
