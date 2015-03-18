@@ -10,6 +10,7 @@ import { run as runLocalServer,
          stop as stopLocalServer } from './localserver.js';
 
 const APPS = {
+  'iOS61': 'http://appium.s3.amazonaws.com/TestApp6.1.app.zip',
   'iOS7': 'http://appium.s3.amazonaws.com/TestApp7.0.app.zip',
   'iOS71': 'http://appium.s3.amazonaws.com/TestApp7.1.app.zip',
   'iOSHybrid6': 'http://appium.s3.amazonaws.com/WebViewApp6.1.app.zip',
@@ -145,7 +146,9 @@ function fixAppium1Caps (testSpec, caps) {
       caps.platformVersion = '7.1';
     }
     if (_.contains(["ios", "ios_loc_serv"], tt)) {
-      if (parseFloat(caps.platformVersion < 7.1)) {
+      if (parseFloat(caps.platformVersion) < 7.0) {
+        caps.app = APPS.iOS61;
+      } else if (parseFloat(caps.platformVersion) < 7.1) {
         caps.app = APPS.iOS7;
       } else {
         caps.app = APPS.iOS71;
