@@ -15,7 +15,13 @@ function getMatrixTable (m, detail = false, cli = true) {
   }
   colHeaders.sort();
   rowHeaders.sort();
-  let t = new Table({head: [""].concat(colHeaders.map(c => `iOS ${c}`))});
+  let t = new Table({head: [""].concat(colHeaders.map(c => {
+    if (parseFloat(c) < 6) {
+      return `Android ${c}`;
+    } else {
+      return `iOS ${c}`;
+    }
+  }))});
   for (let r of rowHeaders) {
     let row = [];
     for (let c of colHeaders) {

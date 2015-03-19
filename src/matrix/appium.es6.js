@@ -53,14 +53,16 @@ async function main (config) {
   let opts = {c: 'prod', u: 'appium-matrix-%t', n: CONCURRENCY};
   let basicTestOpts = {};
   let deviceTestOpts = {};
+  let androidWebTestOpts = {};
+  let androidTestOpts = {};
   let appiumVers = ['1.0.0', '1.1.0', '1.2.0', '1.2.1', '1.2.2',
-                    '1.2.4', '1.3.1', '1.3.3', '1.3.4', '1.3.6'];
+                    '1.2.4', '1.3.1', '1.3.3', '1.3.4', '1.3.6', '1.3.7-beta'];
   //appiumVers = ['1.3.6'];
   let iosVers = ['6.1', '7.0', '7.1', '8.0|a>=1.3.1', '8.1|a>=1.3.1',
                  '8.2|a>=1.3.6'];
   //iosVers = ['7.1', '8.1'];
   basicTestOpts.a = deviceTestOpts.a = appiumVers;
-  basicTestOpts.r = deviceTestOpts.r = config.runs;
+  basicTestOpts.r = deviceTestOpts.r = androidWebTestOpts.r = androidTestOpts.r = config.runs;
   basicTestOpts.v = deviceTestOpts.v = iosVers;
   basicTestOpts.t = ['ios', 'web_guinea', 'selfsigned', 'connect', 'ios_loc_serv'];
   //basicTestOpts.t = ['ios', 'web_guinea'];
@@ -72,6 +74,20 @@ async function main (config) {
                       'iPad Air|v>=8.0'];
   opts.tests = [basicTestOpts, deviceTestOpts];
   //opts.tests = [basicTestOpts];
+  let androidVers = ['2.3', '4.0', '4.1', '4.2', '4.3', '4.4', '5.0|a>=1.2.2'];
+  androidWebTestOpts.v = androidTestOpts.v = androidVers;
+  //androidWebTestOpts.a = androidTestOpts.a = appiumVers;
+  androidWebTestOpts.a = androidTestOpts.a = ['1.3.7-beta'];
+  androidWebTestOpts.t = ['web_guinea|v>=4.4', 'selfsigned|v>=4.4', 'connect|v>=4.4'];
+  androidWebTestOpts.d = ['ae', 'Samsung Galaxy S4 Device', 'Samsung Galaxy S5 Device'];
+  androidWebTestOpts.b = ['b', 'c|d!=ae'];
+  androidTestOpts.t = ['android|v>=4.2', 'android_hybrid|v>=4.4', 'selendroid'];
+  //androidTestOpts.t = ['android|v>=4.2'];
+  //androidTestOpts.d = ['ae', 'Samsung Galaxy S4 Emulator', 'Samsung Galaxy S4 Device|v=4.3',
+                       //'Samsung Galaxy S4 Device|v=4.4', 'Samsung Galaxy S5 Device|v=4.4'];
+  androidTestOpts.d = ['ae'];
+  //opts.tests = [androidTestOpts, androidWebTestOpts];
+  opts.tests = [androidTestOpts];
 
   let res = await runsauce({testsuite: opts}, false, getStatusHandler(CONCURRENCY));
   if (config.file) {

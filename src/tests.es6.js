@@ -15,6 +15,28 @@ function titleToMatch (match) {
   });
 }
 
+function contexts () {
+  return new Asserter(function (driver, cb) {
+    driver.contexts().then((contexts) => {
+      contexts.length.should.be.above(1);
+      return true;
+    }).nodeify(cb);
+  });
+}
+
+async function selectWebview (driver) {
+  await driver.waitFor(contexts(), 10000, 1000);
+  let ctxs = await driver.contexts();
+  for (let c of ctxs) {
+    if (c !== 'NATIVE_APP') {
+      await driver.context(c);
+      return;
+    }
+  }
+  throw new Error("Couldn't find a webview in contexts: " +
+                  JSON.stringify(ctxs));
+}
+
 function isAppium1 (caps) {
   return caps.appiumVersion && parseFloat(caps.appiumVersion) >= 1;
 }
@@ -133,13 +155,13 @@ tests.iosLocServTest.extraCaps = {
   bundleId: 'io.appium.TestApp'
 };
 
-tests.androidTest = async function (driver) {
-  await androidCycle(driver);
+tests.androidTest = async function (driver, caps) {
+  await androidCycle(driver, caps);
 };
 
-tests.androidLongTest = async function (driver) {
+tests.androidLongTest = async function (driver, caps) {
   for (let i = 0; i < 15; i++) {
-    await androidCycle(driver);
+    await androidCycle(driver, caps);
   }
 };
 
@@ -196,13 +218,12 @@ tests.selendroidTest = async function (driver) {
 };
 
 tests.androidHybridTest = async function (driver) {
-  await driver.sleep(3);
-  let ctxs = await driver.contexts();
-  await driver.context(ctxs[ctxs.length - 1]);
+  await selectWebview(driver);
   let el = await driver.elementById('i_am_a_textbox');
   await el.clear();
-  await el.type("Test string");
-  "Test string".should.equal(await el.getAttribute('value'));
+  await el.sendKeys("Test string");
+  let refreshedEl = await driver.elementById('i_am_a_textbox');
+  "Test string".should.equal(await refreshedEl.getAttribute('value'));
 };
 
 tests.jsTest = async function (driver, caps, opts) {

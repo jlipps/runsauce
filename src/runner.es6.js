@@ -16,7 +16,7 @@ const APPS = {
   'iOSHybrid6': 'http://appium.s3.amazonaws.com/WebViewApp6.1.app.zip',
   'iOSHybrid7': 'http://appium.s3.amazonaws.com/WebViewApp7.1.app.zip',
   'Android': 'http://appium.s3.amazonaws.com/ContactManager.apk',
-  'AndroidHybrid': 'http://appium.s3.amazonaws.com/ApiDemos-debug-2014-08.apk',
+  'AndroidHybrid': 'http://appium.s3.amazonaws.com/ApiDemos-debug-2015-03-19.apk',
   'Selendroid': 'http://appium.s3.amazonaws.com/selendroid-test-app-0.7.0.apk'
 };
 
@@ -168,7 +168,7 @@ function fixAppium1Caps (testSpec, caps) {
     } else if (tt === 'android_hybrid') {
       caps.appActivity = '.view.WebView1';
       caps.app = APPS.AndroidHybrid;
-      if (parseFloat(caps.platformVersion < 4.4)) {
+      if (parseFloat(caps.platformVersion) < 4.4) {
         caps.automationName = 'Selendroid';
       }
     }
