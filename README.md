@@ -1,4 +1,4 @@
-RunSauce
+runsauce
 ========
 
 Run many kinds of simple tests with any [Sauce Labs](https://saucelabs.com)
