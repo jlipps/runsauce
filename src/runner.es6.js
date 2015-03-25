@@ -43,6 +43,7 @@ function getTestByType (testType) {
     case 'js': return tests.jsTest;
     case 'web_long': return tests.longWebTest;
     case 'web_guinea': return tests.guineaPigTest;
+    case 'web_fraud': return tests.webTestFraud;
     default: return tests.webTest;
   }
 }
@@ -201,6 +202,7 @@ function fixAppiumCaps (testSpec, caps, onSauce) {
 
 export async function runTest (testSpec, opts, shouldLog, multiRun, statusFn) {
   let start = Date.now();
+  let started = false;
   let result = {caps: testSpec.caps, test: testSpec.testName};
   let driver;
   let log = msg => {
@@ -218,6 +220,7 @@ export async function runTest (testSpec, opts, shouldLog, multiRun, statusFn) {
     } else {
       let startTime = Date.now();
       await driver.init(testSpec.caps);
+      started = true;
       await driver.setImplicitWaitTimeout(15000);
       result.startupTime = Date.now() - startTime;
       result.sessionId = driver.sessionID;
@@ -264,7 +267,7 @@ export async function runTest (testSpec, opts, shouldLog, multiRun, statusFn) {
     }
   }
   if (result.stack) {
-    statusFn({test: 'F'});
+    statusFn({test: started ? 'F' : 'E'});
   } else {
     statusFn({test: '.'});
   }

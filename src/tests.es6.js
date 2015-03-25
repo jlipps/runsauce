@@ -54,6 +54,12 @@ tests.longWebTest = async function (driver) {
   }
 };
 
+tests.webTestFraud = async function (driver) {
+  await driver.get("http://foo:bar@google.com");
+  await driver.waitFor(titleToMatch("Google"), 7000, 700);
+};
+tests.webTestFraud.extraCaps = {safariIgnoreFraudWarning: true};
+
 tests.guineaPigTest = async function (driver) {
   await driver.get("http://saucelabs.com/test/guinea-pig");
   await driver.waitFor(titleToMatch("I am a page title"), 10000, 1000);
