@@ -196,15 +196,19 @@ async function androidCycle (driver, caps) {
   } else {
     text = await driver.elementByTagName("button").text();
   }
-  text.should.equal("Add Contact");
-  let cb;
-  if (appium1) {
-    cb = await driver.elementByXPath("//android.widget.CheckBox");
-  } else {
-    cb = await driver.elementByXPath("//checkBox");
+  ["Add Contact", "Save"].should.contain(text);
+  let cb = null;
+  try {
+    if (appium1) {
+      cb = await driver.elementByXPath("//android.widget.CheckBox");
+    } else {
+      cb = await driver.elementByXPath("//checkBox");
+    }
+  } catch (e) {}
+  if (cb) {
+    await cb.click();
+    "Show Invisible Contacts (Only)".should.equal(await cb.text());
   }
-  await cb.click();
-  "Show Invisible Contacts (Only)".should.equal(await cb.text());
 }
 
 tests.selendroidTest = async function (driver) {

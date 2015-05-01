@@ -321,33 +321,35 @@ function prepareTestSet (opts, tests = null) {
   tests = tests.filter(t => {
     let okCombo = true;
     for (let v of _.values(t)) {
-      let restriction = v.toString().split('|')[1];
-      if (typeof restriction === 'undefined') {
+      let restrictions = v.toString().split('|').slice(1);
+      if (restrictions.length === 0) {
         continue;
       }
-      const specialChars = ['<', '>', '!'];
-      let [restrictOnKey, restrictOnValue] = restriction.split('=');
-      let lastChar = restrictOnKey[restrictOnKey.length - 1];
-      if (_.contains(specialChars, lastChar)) {
-        restrictOnKey = restrictOnKey.slice(0, -1);
-      }
-      let restrictedValue = t[restrictOnKey].split('|')[0];
-      switch (lastChar) {
-        case '>':
-          if (restrictedValue < restrictOnValue) {
-            okCombo = false;
-          }
-          break;
-        case '<':
-          if (restrictedValue > restrictOnValue) {
-            okCombo = false;
-          }
-          break;
-        case '!':
-          okCombo = restrictedValue !== restrictOnValue;
-          break;
-        default:
-          okCombo = restrictedValue == restrictOnValue;
+      for (let restriction of restrictions) {
+        const specialChars = ['<', '>', '!'];
+        let [restrictOnKey, restrictOnValue] = restriction.split('=');
+        let lastChar = restrictOnKey[restrictOnKey.length - 1];
+        if (_.contains(specialChars, lastChar)) {
+          restrictOnKey = restrictOnKey.slice(0, -1);
+        }
+        let restrictedValue = t[restrictOnKey].split('|')[0];
+        switch (lastChar) {
+          case '>':
+            if (restrictedValue < restrictOnValue) {
+              okCombo = false;
+            }
+            break;
+          case '<':
+            if (restrictedValue > restrictOnValue) {
+              okCombo = false;
+            }
+            break;
+          case '!':
+            okCombo = restrictedValue !== restrictOnValue;
+            break;
+          default:
+            okCombo = restrictedValue == restrictOnValue;
+        }
       }
       if (!okCombo) return false;
     }
