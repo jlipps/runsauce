@@ -9,7 +9,7 @@ basicTestOpts.a = deviceTestOpts.a = appiumVers;
 basicTestOpts.r = deviceTestOpts.r = 5;
 basicTestOpts.v = deviceTestOpts.v = iosVers;
 //basicTestOpts.t = ['ios', 'web_guinea', 'selfsigned', 'connect', 'ios_loc_serv'];
-basicTestOpts.t = deviceTestOpts.t = ['ios', 'web_guinea', 'ios_loc_serv'];
+basicTestOpts.t = deviceTestOpts.t = ['ios', 'web_guinea', 'ios_loc_serv', 'web_fraud'];
 basicTestOpts.d = ['ip', 'ipa'];
 deviceTestOpts.d = ['iPhone Retina (3.5-inch)|v=7.0', 'iPhone 5s|v=7.1',
                     'iPad 2|v=7.1', 'iPhone 6 Plus|v>=8.0',
