@@ -25,7 +25,7 @@ const NATIVE_TESTS = ["appium", "ios", "android", "android_long",
                       "ios_loc_serv"];
 
 const WEB_TESTS = ["https", "selfsigned", "connect", "localname", "web_long",
-                   "web", "web_guinea"];
+                   "web", "web_guinea", "web_fraud"];
 
 function getTestByType (testType) {
   switch (testType) {
