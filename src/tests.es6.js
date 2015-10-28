@@ -186,8 +186,9 @@ async function androidCycle (driver, caps) {
   }
   await fs[0].sendKeys("My Name");
   await fs[2].sendKeys("someone@somewhere.com");
-  "My Name".should.equal(await fs[0].text());
-  "someone@somewhere.com".should.equal(await fs[2].text());
+  // do contains search since RDC adds weird extra edit text
+  (await fs[0].text()).should.contain("My Name");
+  (await fs[2].text()).should.contain("someone@somewhere.com");
   await driver.back();
   await driver.sleep(2);
   let text;
