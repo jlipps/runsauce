@@ -188,6 +188,9 @@ function fixAppium1Caps (testSpec, caps) {
       caps.browserName = "chrome";
     }
   }
+  if (_.contains(WEB_TESTS, tt)) {
+    caps.webviewConnectRetries = 10;
+  }
   return caps;
 }
 
