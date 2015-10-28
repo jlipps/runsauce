@@ -139,7 +139,7 @@ function fixAppium1Caps (testSpec, caps) {
     caps.deviceName = 'iPhone Simulator';
   }
   if (!testSpec.onSauce) {
-    caps.launchTimeout = 15000;
+    caps.launchTimeout = 25000;
   }
   if (caps.deviceName[0].toLowerCase() === 'i') {
     caps.platformName = 'iOS';
