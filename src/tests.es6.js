@@ -152,8 +152,10 @@ tests.iosHybridTest = async function (driver, caps) {
 };
 
 tests.iosLocServTest = async function (driver) {
-  let uiSwitch = await driver.elementByClassName('UIASwitch');
-  (await uiSwitch.getAttribute('value')).should.eql(1);
+  await retryInterval(5, 1000, async () => {
+    let uiSwitch = await driver.elementByClassName('UIASwitch');
+    (await uiSwitch.getAttribute('value')).should.eql(1);
+  });
 };
 tests.iosLocServTest.extraCaps = {
   locationServicesAuthorized: true,
@@ -226,13 +228,10 @@ tests.selendroidTest = async function (driver) {
   // test against lowercase to handle selendroid + android 4.0 bug
   (await f.getAttribute('value')).toLowerCase().should.include("test string");
   await driver.elementByCss("input[type=submit]").click();
-  // below doesn't work because of
-  // https://github.com/selendroid/selendroid/issues/832
-  //await driver.sleep(3);
-  //console.log((await driver.elementsByTagName('h1')).length);
-  //console.log(await driver.source());
-  //"This is my way of saying hello".should
-    //.equal(await driver.elementByTagName("h1").text());
+  await driver.sleep(3);
+  let h1Text = await driver.elementByTagName("h1").text();
+  // some versions of selendroid have a bug where this is the empty string
+  h1Text.should.match(/()|(This is my way of saying hello)/);
 };
 
 tests.androidHybridTest = async function (driver) {
