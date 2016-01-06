@@ -84,7 +84,7 @@ tests.webTestConnect = async function (driver) {
 
 tests.webTestLocalName = async function (driver, opts) {
   let host = opts.localname;
-  if (host === "" || host === "localhost" || host.indexOf(".local") === -1) {
+  if (!host || host === "" || host === "localhost" || host.indexOf(".local") === -1) {
     throw new Error("Can't run local name test without an interesting hostname");
   }
   await localTest(driver, "http://" + host + ":8000");

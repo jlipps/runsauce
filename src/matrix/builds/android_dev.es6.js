@@ -1,8 +1,8 @@
-let opts = {c: 'dev', u: 'appium-android-matrix-%t', n: 1,
+let opts = {c: 'dev', u: 'appium-android-matrix-%t', n: 4,
             name: "Appium Android support matrix"};
 let androidWebTestOpts = {};
 let androidTestOpts = {};
-let appiumVers = ['1.4.16'];
+let appiumVers = ['1.4.16', '1.5.0-beta'];
 androidTestOpts.a = androidWebTestOpts.a = appiumVers;
 androidTestOpts.r = 1;
 let androidVers = ['2.3', '4.0', '4.1', '4.2', '4.3', '4.4', '5.0', '5.1'];

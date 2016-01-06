@@ -1,13 +1,13 @@
-let opts = {c: 'prod', u: 'appium-ios-matrix-%t', n: 40,
+let opts = {c: 'prod', u: 'appium-15-ios-matrix-%t', n: 40,
             name: 'Appium iOS support matrix'};
 let basicTestOpts = {};
 let deviceTestOpts = {};
 //let appiumVers = ['1.0.0', '1.1.0', '1.2.4', '1.3.6', '1.3.7', '1.4.0'];
-let appiumVers = ['1.4.16'];
+let appiumVers = ['1.5.0-beta'];
 //let iosVers = ['6.1', '7.0', '7.1', '8.0|a>=1.3.1', '8.1|a>=1.3.1',
                //'8.2|a>=1.3.6'];
-let iosVers = ['6.1', '7.0', '7.1', '8.0', '8.1', '8.2', '8.3', '8.4', '9.0', '9.1'];
-//let iosVers = ['9.2'];
+//let iosVers = ['6.1', '7.0', '7.1', '8.0', '8.1', '8.2', '8.3', '8.4', '9.0', '9.1'];
+let iosVers = ['8.0', '8.1', '8.2', '8.3', '8.4', '9.0', '9.1', '9.2'];
 basicTestOpts.a = deviceTestOpts.a = appiumVers;
 basicTestOpts.r = deviceTestOpts.r = 5;
 basicTestOpts.v = deviceTestOpts.v = iosVers;
