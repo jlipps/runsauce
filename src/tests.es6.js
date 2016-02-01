@@ -1,6 +1,7 @@
 import { run as runJsUnit } from './js-unit';
 import { retryInterval } from 'asyncbox';
 import wd from 'wd';
+import _ from 'lodash';
 import 'should';
 
 const Asserter = wd.asserters.Asserter;
@@ -161,6 +162,29 @@ tests.iosLocServTest.extraCaps = {
   locationServicesAuthorized: true,
   locationServicesEnabled: true,
   bundleId: 'io.appium.TestApp'
+};
+
+tests.iosIwd = async function (driver, caps) {
+  let appium1 = isAppium1(caps);
+  let times = 30, timings = [];
+  const maxTimeMs = 900;
+  const loop = async () => {
+    let start = Date.now();
+    if (appium1) {
+      await driver.elementsByClassName('UIATextField');
+    } else {
+      await driver.elementsByTagName('textField');
+    }
+    return Date.now() - start;
+  };
+  for (let i = 0; i < times; i++) {
+    timings.push(await loop());
+  }
+  const avgTime = _.sum(timings) / times;
+  if (avgTime > maxTimeMs) {
+    throw new Error(`Expected average command time to be no greater than ` +
+                    `${maxTimeMs}ms but it was ${avgTime}ms`);
+  }
 };
 
 tests.androidTest = async function (driver, caps) {

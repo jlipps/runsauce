@@ -22,7 +22,7 @@ const APPS = {
 
 const NATIVE_TESTS = ["appium", "ios", "android", "android_long",
                       "selendroid", "android_hybrid", "ios_hybrid",
-                      "ios_loc_serv"];
+                      "ios_loc_serv", "ios_iwd"];
 
 const WEB_TESTS = ["https", "selfsigned", "connect", "localname", "web_long",
                    "web", "web_guinea", "web_fraud"];
@@ -36,6 +36,7 @@ function getTestByType (testType) {
     case 'appium': case 'ios': return tests.iosTest;
     case 'ios_hybrid': return tests.iosHybridTest;
     case 'ios_loc_serv': return tests.iosLocServTest;
+    case 'ios_iwd': return tests.iosIwd;
     case 'android': return tests.androidTest;
     case 'android_long': return tests.androidLongTest;
     case 'android_hybrid': return tests.androidHybridTest;
@@ -139,14 +140,14 @@ function fixAppium1Caps (testSpec, caps) {
     caps.deviceName = 'iPhone Simulator';
   }
   if (!testSpec.onSauce) {
-    caps.launchTimeout = 25000;
+    caps.launchTimeout = 35000;
   }
   if (caps.deviceName[0].toLowerCase() === 'i') {
     caps.platformName = 'iOS';
     if (!caps.platformVersion) {
       caps.platformVersion = '7.1';
     }
-    if (_.contains(["ios", "ios_loc_serv"], tt)) {
+    if (_.contains(["ios", "ios_loc_serv", "ios_iwd"], tt)) {
       // just use 7.1 app for all tests, it has the right buttons
       if (parseFloat(caps.platformVersion) == 6.1) {
         caps.app = APPS.iOS71;

@@ -81,6 +81,7 @@ const testsMap = {
   ios: "Basic ios native test",
   ios_hybrid: "Basic ios hybrid test",
   ios_loc_serv: "iOS location services test",
+  ios_iwd: "iOS IWD test",
   android: "Basic android native test",
   android_long: "Long android native test",
   android_hybrid: "Basic appium hybrid test",
