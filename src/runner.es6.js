@@ -60,7 +60,11 @@ function getCaps (testSpec) {
   if (testSpec.orientation) {
     caps['device-orientation'] = testSpec.orientation;
   }
-  return fixCaps(testSpec, caps);
+  caps = fixCaps(testSpec, caps);
+  if (testSpec.extraCaps) {
+    _.extend(caps, testSpec.extraCaps);
+  }
+  return caps;
 }
 
 function fixCaps (testSpec, caps) {

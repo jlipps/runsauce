@@ -208,6 +208,11 @@ export function parse (argOverride = null) {
       describe: 'Sauce build id',
       demand: false
     })
+    .options('e', {
+      alias: 'extraCaps',
+      describe: 'Extra capabilities (JSON string, will be merged into final caps)',
+      demand: false
+    })
     .boolean(['setup', 'wait', 'help', 'shortcuts', 'tests', 'verbose']);
 
 
@@ -249,6 +254,7 @@ function mapArgs (args) {
     w: 'wait',
     t: 'test',
     r: 'runs',
+    e: 'extraCaps',
   };
   for (let [shortcut, nameSet] of _.pairs(optMap)) {
     let name = nameSet;
@@ -267,6 +273,9 @@ function mapArgs (args) {
       }
     } else {
       args[name] = args[shortcut];
+      if (name === "extraCaps") {
+        args[name] = JSON.parse(args[name]);
+      }
     }
     delete args[shortcut];
   }
@@ -280,7 +289,7 @@ function prepareTestSet (opts, tests = null) {
     let testArgs = ['browser', 'b', 'platform', 'p', 'device', 'd',
                     'framework', 'f', 'backendVersion', 'a', 'orientation',
                     'o', 'version', 'v', 'localname', 'l', 'wait', 'w',
-                    'test', 't', 'runs', 'r'];
+                    'test', 't', 'runs', 'r', 'extraCaps', 'e'];
     let singleTest = {};
     for (let testArg of testArgs) {
       if (_.has(opts, testArg)) {
