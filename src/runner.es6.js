@@ -3,6 +3,7 @@ import util from 'util';
 import Q from 'q';
 import wd from 'wd';
 import stats from 'stats-lite';
+import Sumologic from 'logs-to-sumologic';
 import { sleep } from 'asyncbox';
 import { tests } from './tests';
 import { testsMap } from './parser';
@@ -408,7 +409,7 @@ function buildTestSuite (opts) {
   return [testSpecs, numTests, numCaps, needsLocalServer];
 }
 
-function reportSuite (results, elapsedMs, doLog = true) {
+function reportSuite (results, elapsedMs, doLog = true, opts) {
   let cleanResults = results.filter(r => !r.stack);
   let passed = cleanResults.length;
   let failed = results.length - passed;
@@ -461,6 +462,18 @@ function reportSuite (results, elapsedMs, doLog = true) {
       log(res.stack);
     }
   }
+
+  if (opts.sumoLogic) {
+    const sumologic = Sumologic.createClient({
+      url: opts.sumoLogic
+    });
+    console.log(results);
+    sumologic.log(results, function () {
+      console.log(arguments)
+      console.log('SENT TO SUMO!');
+    });
+  }
+
   return report;
 }
 
@@ -508,5 +521,5 @@ export async function run (opts, log = true, statusFn = null) {
     await stopLocalServer();
     statusFn({localServer: 'stopped'});
   }
-  return reportSuite(results, Date.now() - start, log);
+  return reportSuite(results, Date.now() - start, log, opts);
 }

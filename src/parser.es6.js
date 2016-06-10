@@ -213,6 +213,11 @@ export function parse (argOverride = null) {
       describe: 'Extra capabilities (JSON string, will be merged into final caps)',
       demand: false
     })
+    .options('j', {
+      alias: 'jsonToSumo',
+      describe: 'Sumo Logic collection endpoint',
+      demand: false
+    })
     .boolean(['setup', 'wait', 'help', 'shortcuts', 'tests', 'verbose']);
 
 
@@ -255,6 +260,7 @@ function mapArgs (args) {
     t: 'test',
     r: 'runs',
     e: 'extraCaps',
+    j: 'jsonToSumo',
   };
   for (let [shortcut, nameSet] of _.pairs(optMap)) {
     let name = nameSet;
