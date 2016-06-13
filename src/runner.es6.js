@@ -3,10 +3,10 @@ import util from 'util';
 import Q from 'q';
 import wd from 'wd';
 import stats from 'stats-lite';
-import Sumologic from 'logs-to-sumologic';
 import { sleep } from 'asyncbox';
 import { tests } from './tests';
 import { testsMap } from './parser';
+import { sendToSumo } from './utils';
 import { run as runLocalServer,
          stop as stopLocalServer } from './localserver.js';
 
@@ -409,7 +409,7 @@ function buildTestSuite (opts) {
   return [testSpecs, numTests, numCaps, needsLocalServer];
 }
 
-function reportSuite (results, elapsedMs, doLog = true, opts) {
+async function reportSuite (results, elapsedMs, doLog = true, opts) {
   let cleanResults = results.filter(r => !r.stack);
   let passed = cleanResults.length;
   let failed = results.length - passed;
@@ -464,14 +464,14 @@ function reportSuite (results, elapsedMs, doLog = true, opts) {
   }
 
   if (opts.sumoLogic) {
-    const sumologic = Sumologic.createClient({
-      url: opts.sumoLogic
-    });
-    console.log(results);
-    sumologic.log(results, function () {
-      console.log(arguments)
-      console.log('SENT TO SUMO!');
-    });
+    log("Sending results to Sumo Logic");
+    try {
+      await sendToSumo(opts.sumoLogic, results);
+      log("Success!");
+    } catch (err) {
+      log("Couldn't send results to Sumo Logic");
+      log(err);
+    }
   }
 
   return report;
