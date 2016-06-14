@@ -28,6 +28,8 @@ const NATIVE_TESTS = ["appium", "ios", "android", "android_long",
 const WEB_TESTS = ["https", "selfsigned", "connect", "localname", "web_long",
                    "web", "web_guinea", "web_fraud"];
 
+const PJSON = require('../package.json');
+
 function getTestByType (testType) {
   switch (testType) {
     case 'https': return tests.webTestHttps;
@@ -464,9 +466,16 @@ async function reportSuite (results, elapsedMs, doLog = true, opts) {
   }
 
   if (opts.sumoLogic) {
+    let sumoResults = _.cloneDeep(results);
+    for (let res of sumoResults) {
+      // Add saucerun version, mark status & remove stack trace
+      res.runsauceVersion = PJSON.version;
+      res.status = res.stack ? 'failure' : 'success';
+      delete res.stack;
+    }
     log("Sending results to Sumo Logic");
     try {
-      await sendToSumo(opts.sumoLogic, results);
+      await sendToSumo(opts.sumoLogic, sumoResults);
       log("Success!");
     } catch (err) {
       log("Couldn't send results to Sumo Logic");
@@ -521,5 +530,5 @@ export async function run (opts, log = true, statusFn = null) {
     await stopLocalServer();
     statusFn({localServer: 'stopped'});
   }
-  return reportSuite(results, Date.now() - start, log, opts);
+  return await reportSuite(results, Date.now() - start, log, opts);
 }
