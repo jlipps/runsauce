@@ -48,7 +48,6 @@ export async function runsauce (opts = null, log = true, statusFn = null) {
   }
   prepareTestSet(opts, tests);
   opts.tests = opts.tests.map(t => mapArgs(t));
-  console.log(opts.tests);
   if (!_.has(config, opts.config)) {
     exit("Config " + opts.config + " doesn't exist");
   }
