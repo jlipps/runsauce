@@ -39,4 +39,3 @@ export function avg (arr) {
   }
   return 0;
 }
-

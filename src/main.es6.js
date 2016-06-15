@@ -28,6 +28,7 @@ export async function runsauce (opts = null, log = true, statusFn = null) {
   if (config === null) {
     exit("Could not load config file, please run with --setup");
   }
+
   if (opts.testsuite || opts.testfile) {
     if (opts.testsuite) {
       testfile = opts.testsuite;
@@ -62,6 +63,7 @@ export async function runsauce (opts = null, log = true, statusFn = null) {
     processes: opts.processes,
     verbose: opts.verbose,
     build: opts.build,
+    sumoLogic: opts.jsonToSumo
   }, config[opts.config]), log, statusFn);
 }
 

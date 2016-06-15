@@ -6,6 +6,7 @@ import stats from 'stats-lite';
 import { sleep } from 'asyncbox';
 import { tests } from './tests';
 import { testsMap } from './parser';
+import { sendToSumo } from './utils';
 import { run as runLocalServer,
          stop as stopLocalServer } from './localserver.js';
 
@@ -26,6 +27,8 @@ const NATIVE_TESTS = ["appium", "ios", "android", "android_long",
 
 const WEB_TESTS = ["https", "selfsigned", "connect", "localname", "web_long",
                    "web", "web_guinea", "web_fraud"];
+
+const PJSON = require('../package.json');
 
 function getTestByType (testType) {
   switch (testType) {
@@ -408,7 +411,7 @@ function buildTestSuite (opts) {
   return [testSpecs, numTests, numCaps, needsLocalServer];
 }
 
-function reportSuite (results, elapsedMs, doLog = true) {
+async function reportSuite (results, elapsedMs, doLog = true, opts) {
   let cleanResults = results.filter(r => !r.stack);
   let passed = cleanResults.length;
   let failed = results.length - passed;
@@ -461,6 +464,25 @@ function reportSuite (results, elapsedMs, doLog = true) {
       log(res.stack);
     }
   }
+
+  if (opts.sumoLogic) {
+    let sumoResults = _.cloneDeep(results);
+    for (let res of sumoResults) {
+      // Add saucerun version, mark status & remove stack trace
+      res.runsauceVersion = PJSON.version;
+      res.status = res.stack ? 'failure' : 'success';
+      delete res.stack;
+    }
+    log("Sending results to Sumo Logic");
+    try {
+      await sendToSumo(opts.sumoLogic, sumoResults);
+      log("Success!");
+    } catch (err) {
+      log("Couldn't send results to Sumo Logic");
+      log(err);
+    }
+  }
+
   return report;
 }
 
@@ -508,5 +530,5 @@ export async function run (opts, log = true, statusFn = null) {
     await stopLocalServer();
     statusFn({localServer: 'stopped'});
   }
-  return reportSuite(results, Date.now() - start, log);
+  return await reportSuite(results, Date.now() - start, log, opts);
 }

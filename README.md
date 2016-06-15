@@ -129,6 +129,13 @@ Ultimately the app will output something like:
 
 Ultimately it gives us a good idea of which platforms are supported and how reliable they are! See `src/matrix/appium.es6.js` for more parameters.
 
+
+## Report results to Sumo Logic
+
+```bash
+./bin/runsauce.js -i tests.json -j "https://endpoint1.collection.us2.sumologic.com/...."
+```
+
 ## Building from source
 
 ```bash

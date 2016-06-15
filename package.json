@@ -38,6 +38,7 @@
     "cli-table": "^0.3.1",
     "es6-mapify": "^1.0.0",
     "lodash": "^3.3.1",
+    "logs-to-sumologic": "^1.0.2",
     "optimist": "~0.6.0",
     "prompt": "~0.2.12",
     "q": "^1.2.0",
