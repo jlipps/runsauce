@@ -220,8 +220,13 @@ export async function runTest (testSpec, opts, shouldLog, multiRun, statusFn) {
     if (shouldLog && !multiRun) console.log(msg);
   };
   if (testSpec.onSauce) {
-    driver = wd.promiseChainRemote(opts.server, opts.port, opts.userName,
-                                   opts.accessKey);
+    driver = wd.promiseChainRemote({
+      hostname: opts.server,
+      port: opts.port,
+      user: opts.userName,
+      pwd: opts.accessKey,
+      protocol: opts.port === 443 ? "https:" : "http:"
+    });
   } else {
     driver = wd.promiseChainRemote(opts.server, opts.port);
   }
