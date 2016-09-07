@@ -5,16 +5,19 @@ import _ from 'lodash';
 const browserMap = {
   's': 'Safari'
   , 'b': 'Browser'
+  , 'f': 'firefox'
   , 'c': 'Chrome'
   , 'i': 'Internet Explorer'
   , 'ie': 'Internet Explorer'
+  , 'e': 'MicrosoftEdge'
   , 'ip': 'iPhone'
   , 'ipa': 'iPad'
   , 'a': 'Android'
 };
 
 const platformMap = {
-  'w': 'Windows 2012',
+  'w': 'Windows 10',
+  'w10': 'Windows 10',
   'w12': 'Windows 2012',
   'w8': 'Windows 2008',
   'wx': 'Windows XP',
