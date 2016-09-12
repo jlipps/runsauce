@@ -131,6 +131,9 @@ function fixAppium18Caps (testSpec, caps) {
 
 function fixAppium1Caps (testSpec, caps) {
   caps.appiumVersion = testSpec.backendVersion.toString();
+  if (testSpec.automationName) {
+    caps.automationName = testSpec.automationName;
+  }
   if (/^\d$/.test(caps.appiumVersion)) {
     caps.appiumVersion += ".0";
   }

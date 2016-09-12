@@ -50,6 +50,12 @@ const orientationMap = {
 , 'l': 'landscape'
 };
 
+const automationNameMap = {
+  'x': 'XCUITest',
+  'u2': 'UiAutomator2',
+  's': 'Selendroid'
+};
+
 let shortcutHelp = function () {
   let t = "All the options have nice shortcuts:\n\n";
   const shortcutTypes = {
@@ -58,6 +64,7 @@ let shortcutHelp = function () {
     , 'Devices (-d)': deviceMap
     , 'JS Test Framework (-f)': testFrameworkMap
     , 'Orientations': orientationMap
+    , 'Automation Names': automationNameMap
   };
   _.each(shortcutTypes, function(map, type) {
     t += type + ":\n";
@@ -150,6 +157,12 @@ export function parse (argOverride = null) {
       alias: 'backendVersion',
       default: '',
       describe: 'Selenium/Appium version',
+      demand: false
+    })
+    .options('m', {
+      alias: 'automationName',
+      default: '',
+      describe: 'Appium automationName',
       demand: false
     })
     .options('w', {
@@ -255,6 +268,7 @@ function mapArgs (args) {
     p: ['platform', platformMap],
     d: ['device', deviceMap],
     f: ['framework', testFrameworkMap],
+    m: ['automationName', automationNameMap],
     a: 'backendVersion',
     o: 'orientation',
     v: 'version',
@@ -298,7 +312,8 @@ function prepareTestSet (opts, tests = null) {
     let testArgs = ['browser', 'b', 'platform', 'p', 'device', 'd',
                     'framework', 'f', 'backendVersion', 'a', 'orientation',
                     'o', 'version', 'v', 'localname', 'l', 'wait', 'w',
-                    'test', 't', 'runs', 'r', 'extraCaps', 'e'];
+                    'test', 't', 'runs', 'r', 'extraCaps', 'e', 'm',
+                    'automationName'];
     let singleTest = {};
     for (let testArg of testArgs) {
       if (_.has(opts, testArg)) {
