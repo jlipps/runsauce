@@ -4,6 +4,8 @@ import prompt from 'prompt';
 import Q from 'q';
 
 const configFile = path.resolve(process.env.HOME, ".runsauce.json");
+const SAUCE_PROD_SERVER = 'ondemand.saucelabs.com';
+const SAUCE_PROD_PORT = 80;
 
 prompt.message = ">";
 prompt.delimiter = " ";
@@ -50,8 +52,8 @@ async function promptForConfig () {
   }]);
   return {
     prod: {
-      server: 'ondemand.saucelabs.com'
-      , port: 80
+      server: SAUCE_PROD_SERVER
+      , port: SAUCE_PROD_PORT
       , userName: res.userName
       , accessKey: res.accessKey
       , jsRestEndpoint: 'https://saucelabs.com/rest/v1/' + res.userName + '/js-tests'
@@ -64,6 +66,20 @@ export function getConfig () {
   try {
     config = require(configFile);
   } catch (e) {
+    if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
+      let u = process.env.SAUCE_USERNAME;
+      console.log("(Using env vars for username/access key, run with --setup to persist)");
+      return {
+        prod: {
+          server: SAUCE_PROD_SERVER
+          , port: SAUCE_PROD_PORT
+          , userName: u
+          , accessKey: process.env.SAUCE_ACCESS_KEY
+          , jsRestEndpoint: 'https://saucelabs.com/rest/v1/' + u + '/js-tests'
+        }
+      };
+    }
+
     console.log(e);
     config = null;
   }

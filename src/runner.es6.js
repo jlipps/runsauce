@@ -71,7 +71,7 @@ function getCaps (testSpec) {
 }
 
 function fixCaps (testSpec, caps) {
-  if (caps.version && caps.version.toString().length === 1) {
+  if (caps.version && caps.version.toString().indexOf('.') === -1) {
     caps.version = caps.version.toString() + ".0";
   }
   if (caps.device ||
