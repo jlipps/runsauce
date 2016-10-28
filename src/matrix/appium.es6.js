@@ -5,6 +5,7 @@ import { asyncify } from 'asyncbox';
 import Q from 'q';
 import fs from 'fs';
 import optimist from 'optimist';
+import _ from 'lodash';
 
 import { getStatusHandler } from './utils';
 import { runsauce } from '../main';
@@ -56,8 +57,9 @@ async function main (config) {
   let build = require(config.infile);
   let concurrency = build.n;
   console.log(`Running ${build.name || 'build'}`);
-  if (build.j || build.jsonToSumo) {
-    console.log("(Will upload data to SumoLogic after build runs)");
+  let sumoUrl = build.j || build.jsonToSumo;
+  if (sumoUrl) {
+    console.log(`(Will upload data to SumoLogic at ${_.trunc(sumoUrl, 50)} after build runs)`);
   }
   for (let testset of build.tests) {
     testset.r = config.runs;
