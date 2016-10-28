@@ -56,6 +56,9 @@ async function main (config) {
   let build = require(config.infile);
   let concurrency = build.n;
   console.log(`Running ${build.name || 'build'}`);
+  if (build.j || build.jsonToSumo) {
+    console.log("(Will upload data to SumoLogic after build runs)");
+  }
   for (let testset of build.tests) {
     testset.r = config.runs;
   }

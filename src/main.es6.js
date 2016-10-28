@@ -45,6 +45,7 @@ export async function runsauce (opts = null, log = true, statusFn = null) {
     opts.config = testfile.c || testfile.config;
     opts.build = opts.build || testfile.u || testfile.build;
     opts.processes = testfile.n || testfile.processes || opts.processes;
+    opts.jsonToSumo = testfile.j || testfile.jsonToSumo || opts.jsonToSumo;
     tests = testfile.tests;
   }
   prepareTestSet(opts, tests);
