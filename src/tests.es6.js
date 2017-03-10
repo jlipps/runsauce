@@ -144,6 +144,31 @@ tests.iosTest = async function (driver, caps) {
   text.should.equal('9');
 };
 
+async function iosCycle (driver, caps) {
+  let appium1 = isAppium1(caps);
+  let el;
+  if (appium1) {
+    el = await driver.elementByClassName('UIATextField');
+  } else {
+    el = await driver.elementByTagName('textField');
+  }
+  await el.sendKeys('123');
+  await el.clear();
+}
+
+tests.iosSendKeysStressTest = async function (driver, caps) {
+  try {
+    await driver.elementByAccessibilityId('OK').click();
+  } catch (ign) {}
+  for (let i = 0; i < (process.env.STRESS_TIMES || 50); i++) {
+    try {
+      await iosCycle(driver, caps);
+    } catch (e) {
+      throw new Error(`Failure on stress run ${i}: ${e}`);
+    }
+  }
+}
+
 tests.iosHybridTest = async function (driver, caps) {
   if (!isAppium1(caps)) {
     throw new Error("Hybrid test only works with Appium 1 caps");
