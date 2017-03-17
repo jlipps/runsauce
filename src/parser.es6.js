@@ -235,6 +235,10 @@ export function parse (argOverride = null) {
       describe: 'Sumo Logic collection endpoint',
       demand: false
     })
+    .options('events', {
+      desribe: 'Directory to dump event timing JSON blobs into',
+      demand: false
+    })
     .boolean(['setup', 'wait', 'help', 'shortcuts', 'tests', 'verbose']);
 
 
@@ -279,6 +283,7 @@ function mapArgs (args) {
     r: 'runs',
     e: 'extraCaps',
     j: 'jsonToSumo',
+    events: 'events',
   };
   for (let [shortcut, nameSet] of _.pairs(optMap)) {
     let name = nameSet;

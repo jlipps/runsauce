@@ -46,6 +46,7 @@ export async function runsauce (opts = null, log = true, statusFn = null) {
     opts.build = opts.build || testfile.u || testfile.build;
     opts.processes = testfile.n || testfile.processes || opts.processes;
     opts.jsonToSumo = testfile.j || testfile.jsonToSumo || opts.jsonToSumo;
+    opts.events = testfile.events || opts.events;
     tests = testfile.tests;
   }
   prepareTestSet(opts, tests);
@@ -64,7 +65,8 @@ export async function runsauce (opts = null, log = true, statusFn = null) {
     processes: opts.processes,
     verbose: opts.verbose,
     build: opts.build,
-    sumoLogic: opts.jsonToSumo
+    sumoLogic: opts.jsonToSumo,
+    events: opts.events,
   }, config[opts.config]), log, statusFn);
 }
 

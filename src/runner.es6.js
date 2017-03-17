@@ -2,6 +2,8 @@ import _ from 'lodash';
 import util from 'util';
 import Q from 'q';
 import wd from 'wd';
+import fs from 'fs';
+import path from 'path';
 import stats from 'stats-lite';
 import { sleep } from 'asyncbox';
 import { tests } from './tests';
@@ -53,13 +55,14 @@ function getTestByType (testType) {
   }
 }
 
-function getCaps (testSpec) {
+function getCaps (testSpec, eventTimings = false) {
   let caps = {
     browserName: testSpec.browser
     , device: testSpec.device
     , version: testSpec.version.toString()
     , platform: testSpec.platform
     , name: testsMap[testSpec.test]
+    , eventTimings: eventTimings
   };
   if (testSpec.orientation) {
     caps['device-orientation'] = testSpec.orientation;
@@ -278,6 +281,16 @@ export async function runTest (testSpec, opts, shouldLog, multiRun, statusFn) {
     }
   }
   if (driver.sessionID) {
+    if (opts.events) {
+      let jsonFile = path.resolve(opts.events, `${driver.sessionID}.json`);
+      log(` - Writing event timings to ${jsonFile}`);
+      try {
+        let res = await driver.sessionCapabilities();
+        await Q.nfcall(fs.writeFile, jsonFile, JSON.stringify(res));
+      } catch (e) {
+        log(` - [Error writing event timings: ${e.message}]`);
+      }
+    }
     log(" - Ending session");
     try {
       await driver.quit();
@@ -397,7 +410,7 @@ function buildTestSuite (opts) {
     testSpec.test = getTestByType(optSpec.test);
     testSpec.testName = optSpec.test;
     optSpec.onSauce = onSauce && optSpec.test !== 'js';
-    testSpec.caps = getCaps(optSpec);
+    testSpec.caps = getCaps(optSpec, !!opts.events);
     if (testSpec.test.extraCaps) {
       _.extend(testSpec.caps, testSpec.test.extraCaps);
     }
@@ -527,9 +540,9 @@ export async function run (opts, log = true, statusFn = null) {
     runLocalServer();
     statusFn({localServer: 'started'});
   }
-  if (opts.verbose || numTests === 1) {
+  if (opts.verbose || numCaps === 1) {
     if (log) {
-      console.log(util.inspect(_.pluck(testSpecs, 'caps')));
+      console.log(util.inspect(_.pluck(testSpecs, 'caps')[0]));
     }
   }
   let start = Date.now();
