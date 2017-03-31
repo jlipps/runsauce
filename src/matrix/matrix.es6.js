@@ -8,38 +8,56 @@ function getMatrixTable (m, detail = false, cli = true) {
   let colHeaders = [];
   for (let a of _.keys(m)) {
     for (let v of _.keys(m[a])) {
-      if (!_.contains(colHeaders, v)) {
-        colHeaders.push(v);
+      // v is the version but we don't know what the platform is yet, so
+      // figure that out
+      let devices = [];
+      for (let t of _.keys(m[a][v])) {
+        for (let d of _.keys(m[a][v][t])) {
+          devices.push(d);
+        }
+      }
+      let isIos = true;
+      for (let d of devices) {
+        if (d[0] !== 'i') {
+          isIos = false;
+          break;
+        }
+      }
+      let platform = isIos ? 'iOS' : 'Android';
+      let alreadyExists = false;
+      for (let c of colHeaders) {
+        if (c.platform === platform && c.version === v) {
+          alreadyExists = true;
+          break;
+        }
+      }
+      if (!alreadyExists) {
+        colHeaders.push({platform, version: v});
       }
     }
   }
   colHeaders.sort();
   rowHeaders.sort();
-  let t = new Table({head: [""].concat(colHeaders.map(c => {
-    if (parseFloat(c) < 6) {
-      return `Android ${c}`;
-    } else {
-      return `iOS ${c}`;
-    }
-  }))});
+  let t = new Table({head: [""].concat(colHeaders.map(c => `${c.platform} ${c.version}`))});
   for (let r of rowHeaders) {
     let row = [];
     for (let c of colHeaders) {
       let support;
-      if (_.isUndefined(m[r][c])) {
+      let v = c.version;
+      if (_.isUndefined(m[r][v])) {
         support = "\u2014";
-      } else if (m[r][c].all === 1) {
+      } else if (m[r][v].all === 1) {
         support = '\u2713';
-      } else if (m[r][c].all === 0) {
+      } else if (m[r][v].all === 0) {
         support = '\u2717';
       } else {
         if (detail) {
-          support = getInnerTable(m[r][c]);
+          support = getInnerTable(m[r][v]);
           if (cli) {
             support = support.toString();
           }
         } else {
-          support = m[r][c].all.toFixed(2).toString();
+          support = m[r][v].all.toFixed(2).toString();
         }
       }
       row.push(support);
