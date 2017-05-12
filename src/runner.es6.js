@@ -16,6 +16,7 @@ const APPS = {
   'iOS61': 'http://appium.s3.amazonaws.com/TestApp6.1.app.zip',
   'iOS7': 'http://appium.s3.amazonaws.com/TestApp7.0.app.zip',
   'iOS71': 'http://appium.s3.amazonaws.com/TestApp7.1.app.zip',
+  'iOS102': 'http://appium.s3.amazonaws.com/TestApp10.2.app.zip',
   'iOSHybrid6': 'http://appium.s3.amazonaws.com/WebViewApp6.1.app.zip',
   'iOSHybrid7': 'http://appium.s3.amazonaws.com/WebViewApp7.1.app.zip',
   'Android': 'http://appium.s3.amazonaws.com/ContactManager.apk',
@@ -167,6 +168,8 @@ function fixAppium1Caps (testSpec, caps) {
         caps.app = APPS.iOS71;
       } else if (parseFloat(caps.platformVersion) < 7.1) {
         caps.app = APPS.iOS71;
+      } else if (parseFloat(caps.platformVersion) >= 10.2) {
+        caps.app = APPS.iOS102;
       } else {
         caps.app = APPS.iOS71;
       }

@@ -110,9 +110,11 @@ tests.iosTest = async function (driver, caps) {
   if (appium1) {
     // we might get an alert saying the app is slow, click the OK button
     // if it's there
-    try {
-      await driver.elementByAccessibilityId('OK').click();
-    } catch (ign) {}
+    if (parseFloat(caps.platformVersion) < 10.2) {
+      try {
+        await driver.elementByAccessibilityId('OK').click();
+      } catch (ign) {}
+    }
     fs = await driver.elementsByClassName('UIATextField');
   } else {
     fs = await driver.elementsByTagName('textField');
