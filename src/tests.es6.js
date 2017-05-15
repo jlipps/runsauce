@@ -181,8 +181,9 @@ tests.iosHybridTest = async function (driver, caps) {
   if (webContexts.length < 1) {
     throw new Error("Did not find any web contexts");
   }
-  await driver.context(webContexts[ctxs.length - 1]);
-  await driver.get("http://google.com");
+  // just pick the first webcontext
+  await driver.context(webContexts[0]);
+  await driver.get("https://google.com");
   await driver.waitFor(titleToMatch("Google"), 10000, 1000);
   await driver.context(ctxs[0]);
   (await driver.source()).should.include("<AppiumAUT>");
