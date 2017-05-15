@@ -16,6 +16,7 @@ const APPS = {
   'iOS61': 'http://appium.s3.amazonaws.com/TestApp6.1.app.zip',
   'iOS7': 'http://appium.s3.amazonaws.com/TestApp7.0.app.zip',
   'iOS71': 'http://appium.s3.amazonaws.com/TestApp7.1.app.zip',
+  'iOS72': 'http://10-pc-chicken-bucket.surge.sh/TestApp7.2.app.zip',
   'iOS102': 'http://appium.s3.amazonaws.com/TestApp10.2.app.zip',
   'iOSHybrid6': 'http://appium.s3.amazonaws.com/WebViewApp6.1.app.zip',
   'iOSHybrid7': 'http://appium.s3.amazonaws.com/WebViewApp7.1.app.zip',
@@ -163,15 +164,15 @@ function fixAppium1Caps (testSpec, caps) {
       caps.platformVersion = '7.1';
     }
     if (_.contains(["ios", "ios_loc_serv", "ios_iwd", "ios_sk"], tt)) {
-      // just use 7.1 app for all tests, it has the right buttons
+      // just use 7.2 app for all tests, it has the right buttons
       if (parseFloat(caps.platformVersion) == 6.1) {
-        caps.app = APPS.iOS71;
+        caps.app = APPS.iOS72;
       } else if (parseFloat(caps.platformVersion) < 7.1) {
-        caps.app = APPS.iOS71;
+        caps.app = APPS.iOS72;
       } else if (parseFloat(caps.platformVersion) >= 10.2) {
         caps.app = APPS.iOS102;
       } else {
-        caps.app = APPS.iOS71;
+        caps.app = APPS.iOS72;
       }
     } else if (tt === "ios_hybrid") {
       if (parseFloat(caps.platformVersion) < 7) {
