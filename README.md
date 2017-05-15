@@ -77,7 +77,7 @@ For a working example, see `demo-build.json`, included in this repo.
 ## Runsauce as a library
 
 You can also build apps on top of runsauce. An example of this is in
-`src/matrix` (made available as `./bin/appium-matrix.js`. This app reads
+`lib/matrix` (made available as `./bin/appium-matrix.js`. This app reads
 a "build" configuration (see above), then after running the set of Appium tests
 puts together a 4-dimensional support matrix with stability annotations. It
 outputs to the command-line or as HTML. For example, let's say I have the
@@ -175,7 +175,7 @@ especially for large matrices or ones with the `-d` option to show detailed
 information.
 
 (For a set of example matrix build definition files, check out
-`src/matrix/builds`)
+`lib/matrix/builds`)
 
 ## Report results to Sumo Logic
 
