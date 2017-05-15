@@ -268,6 +268,8 @@ export function parse (argOverride = null) {
 }
 
 function mapArgs (args) {
+  // first create a convenient object containing the shortcut params and their
+  // actual full param name, along with any shortcut value sets if appropriate
   const optMap = {
     b: ['browser', browserMap],
     p: ['platform', platformMap],
@@ -285,27 +287,40 @@ function mapArgs (args) {
     j: 'jsonToSumo',
     events: 'events',
   };
+  // now it's time to iterate through each possible param to do some
+  // conversions if necessary
   for (let [shortcut, nameSet] of _.pairs(optMap)) {
     let name = nameSet;
     let shortcutMap;
+    // some options have shortcut maps, so extract those
     if (nameSet instanceof Array) {
       [name, shortcutMap] = nameSet;
     }
-    if ((args[name] && args[name] !== args[shortcut]) || !args[shortcut]) {
+    // if we have no value for this particular key/shortcut, pass on through
+    if (!args[name] && !args[shortcut]) {
       continue;
     }
+    // get our value out of either the fully-spelled-out param or its shortcut
+    let val = args[name] || args[shortcut];
     if (shortcutMap) {
-      if (args[shortcut] instanceof Array) {
-        args[name] = args[shortcut].map(v => shortcutMap[v.toLowerCase()] || v);
+      // if we need to turn shortcut values into real long form values, do so
+      if (val instanceof Array) {
+        // here our value is actually an array of values, so map over them
+        args[name] = val.map(v => shortcutMap[v.toLowerCase()] || v);
       } else {
-        args[name] = shortcutMap[args[shortcut].toLowerCase()] || args[shortcut];
+        // otherwise just convert the value to its actual long form
+        args[name] = shortcutMap[val.toLowerCase()] || val;
       }
     } else {
-      args[name] = args[shortcut];
+      // if there are no shortcut values for this param, just assign it
+      args[name] = val;
       if (name === "extraCaps") {
+        // extraCaps is special, since it's json so we want to turn it into
+        // an object
         args[name] = JSON.parse(args[name]);
       }
     }
+    // get rid of the shortcut version of the param if it exists
     delete args[shortcut];
   }
   return args;

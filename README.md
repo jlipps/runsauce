@@ -1,4 +1,4 @@
-runsauce
+RunSauce
 ========
 
 Run many kinds of simple tests with any [Sauce Labs](https://saucelabs.com)
@@ -39,20 +39,20 @@ combinations of platforms):
 {
   "tests": [
     {
-      "t": ["ios", "ios_hybrid", "ios_loc_serv"],
-      "d": ["ip", "ipa|t=ios"],
-      "v": ["6.1|a<=1.0", "7.0", "7.1", "8.0|a>=1.3.0", "8.1|a>=1.3.1"],
-      "a": ["1.0", "1.1", "1.2", "1.3.4"]
+      "test": ["ios", "ios_hybrid", "ios_loc_serv"],
+      "device": ["ip", "ipa|t=ios"],
+      "version": ["6.1|a<=1.0", "7.0", "7.1", "8.0|a>=1.3.0", "8.1|a>=1.3.1"],
+      "backendVersion": ["1.0", "1.1", "1.2", "1.3.4"]
     }, {
-      "t": ["android_hybrid|v>=4.4", "selendroid"],
-      "d": ["ae"],
-      "v": ["2.3", "4.0", "4.2", "4.3", "4.4", "5.0|a>=1.2.2"],
-      "a": ["1.0", "1.1", "1.2", "1.3.4"]
+      "test": ["android_hybrid|v>=4.4", "selendroid"],
+      "device": ["ae"],
+      "version": ["2.3", "4.0", "4.2", "4.3", "4.4", "5.0|a>=1.2.2"],
+      "backendVersion": ["1.0", "1.1", "1.2", "1.3.4"]
     }
   ],
-  "c": "prod",
-  "u": "appium-smoke-%t",
-  "n": 12
+  "config": "prod",
+  "build": "appium-smoke-%t",
+  "processes": 12
 }
 ```
 
@@ -69,25 +69,40 @@ this "build" with the following command:
 ./bin/runsauce -i my-build.json
 ```
 
+(Note that you can also use the shortcut keys, e.g., `"t"` instead of `"test"`
+and `"d"` instead of `"device"` and so on).
+
+For a working example, see `demo-build.json`, included in this repo.
+
 ## Runsauce as a library
 
-You can also build apps on top of runsauce. An example of this is in `src/matrix` (made available as `./bin/appium-matrix.js`. This app reads a "build" configuration (see above), then after running this puts together a 4-dimensional support matrix with stability annotations. It outputs to the command-line or as HTML. For example, let's say I have the desire to see how Appium fares across Appium versions and iOS versions with respect to the `safariIgnoreFraudWarning` capability. Then I can build a "build" configuration as follows in "fraud-build.js":
+You can also build apps on top of runsauce. An example of this is in
+`src/matrix` (made available as `./bin/appium-matrix.js`. This app reads
+a "build" configuration (see above), then after running the set of Appium tests
+puts together a 4-dimensional support matrix with stability annotations. It
+outputs to the command-line or as HTML. For example, let's say I have the
+desire to see how Appium fares across Appium versions and iOS versions with
+respect to the `safariIgnoreFraudWarning` capability. Then I can build
+a "build" configuration as follows in, say, "fraud-build.js":
 
 ```
-let opts = {c: 'prod', u: 'appium-fraud-matrix-%t', n: 20,
-            name: "Appium iOS fraud warning capability test"};
-opts.tests = [{
-  a: ['1.0.0', '1.1.0', '1.2.4', '1.3.6', '1.3.7-beta'],
-  v: ['6.1', '7.0', '7.1', '8.0|a>=1.3.6', '8.1|a>=1.3.6', '8.2|a>=1.3.7-beta'],
-  t: 'web_fraud',
-  b: 's',
-  d: ['ip', 'ipa']
-}];
-
-export default opts;
+module.exports = {
+  config: 'prod',
+  build: 'appium-fraud-matrix-%t',
+  processes: 20,
+  name: "Appium iOS fraud warning capability test"
+  tests: {
+    backendVersion: ['1.0.0', '1.1.0', '1.2.4', '1.3.6', '1.3.7-beta'],
+    version: ['6.1', '7.0', '7.1', '8.0|a>=1.3.6', '8.1|a>=1.3.6', '8.2|a>=1.3.7-beta'],
+    test: 'web_fraud',
+    browser: 's',
+    device: ['ip', 'ipa']
+  }
+};
 ```
 
-Now I can run the matrix app, specifying my input file and telling it to run each combination 5 times so we can generate meaningful reliability statistics:
+Now I can run the matrix app, specifying my input file and telling it to run
+each combination 5 times so we can generate meaningful reliability statistics:
 
 ```
 ./bin/appium-matrix.js -d -r 5 -i fraud-build.js
@@ -127,13 +142,49 @@ Ultimately the app will output something like:
 └───────────────────┴───────────────────────────────┴───────────────────────────────┴───────────────────────────────┴─────────┴───────────────────────────────┴─────────┘
 ```
 
-Ultimately it gives us a good idea of which platforms are supported and how reliable they are! See `src/matrix/appium.es6.js` for more parameters.
+This depiction gives us a good idea of which platforms are supported and how
+reliable they are! Run `appium-matrix` for the list of parameters:
 
+```
+Options:
+  -d, --detail  Show detail view of failing tests                [default: false]
+  -i, --infile  JSON or JS file that exports a build definition  [required]  [default: null]
+  -f, --file    File to store raw results                        [default: null]
+  -r, --runs    Number of runs for each test                     [default: 3]
+  -s, --skip    Skip actual test run and use results file        [default: false]
+  -h, --html    Output html table instead of CLI table           [default: false]
+```
+
+Since matrix builds often take a long time to run, it can be useful to dump the
+output into a format parseable by the tool, using the `-f` flag. Once this is
+done, there are two further useful options:
+
+```
+appium-matrix -i build.js -f /my/output.json -s
+```
+
+The above will re-generate the CLI report from the output file rather than
+actually re-running the matrix.
+
+```
+appium-matrix -i build.js -f /my/output.json -s -h > /my/output.hml
+```
+
+The above will generate a beautiful little HTML page that is much more readable
+especially for large matrices or ones with the `-d` option to show detailed
+information.
+
+(For a set of example matrix build definition files, check out
+`src/matrix/builds`)
 
 ## Report results to Sumo Logic
 
+If you have a SumoLogic collector endpoint set up, Runsauce will report
+detailed information about test passes and failures, including timing
+information, which can be used for later statistical purposes.
+
 ```bash
-./bin/runsauce.js -i tests.json -j "https://endpoint1.collection.us2.sumologic.com/...."
+runsauce -i tests.json -j "https://endpoint1.collection.us2.sumologic.com/...."
 ```
 
 ## Building from source
@@ -141,8 +192,13 @@ Ultimately it gives us a good idea of which platforms are supported and how reli
 ```bash
 git clone https://github.com/jlipps/runsauce.git
 cd runsauce
+npm install
 gulp transpile
 
-# test it out
+# now you can test it out
 ./bin/runsauce.js
 ```
+
+### Tests
+
+Uh...
