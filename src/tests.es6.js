@@ -177,7 +177,11 @@ tests.iosHybridTest = async function (driver, caps) {
   }
   let ctxs = await driver.contexts();
   ctxs.length.should.be.above(0);
-  await driver.context(ctxs[ctxs.length - 1]);
+  let webContexts = ctxs.filter(c => c !== "NATIVE_APP");
+  if (webContexts.length < 1) {
+    throw new Error("Did not find any web contexts");
+  }
+  await driver.context(webContexts[ctxs.length - 1]);
   await driver.get("http://google.com");
   await driver.waitFor(titleToMatch("Google"), 10000, 1000);
   await driver.context(ctxs[0]);
