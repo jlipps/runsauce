@@ -1,6 +1,3 @@
 #!/usr/bin/env node
-"use strict";
 
-var runsauce = require('../dist/main.js').cli;
-
-runsauce();
+require('../lib/main.js').cli();

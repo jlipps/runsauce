@@ -23,7 +23,7 @@
   "engines": {
     "node": ">=7.6.0"
   },
-  "main": "./main.js",
+  "main": "./lib/main.js",
   "bin": {
     "runsauce": "./bin/runsauce.js",
     "appium-matrix": "./bin/appium-matrix.js"
