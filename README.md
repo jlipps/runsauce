@@ -193,12 +193,13 @@ runsauce -i tests.json -j "https://endpoint1.collection.us2.sumologic.com/...."
 git clone https://github.com/jlipps/runsauce.git
 cd runsauce
 npm install
-gulp transpile
 
-# now you can test it out
+# run the (admittedly very few) tests
+npm test
+
+# configure runsauce, if you haven't already
+# ./bin/runsauce.js --config
+
+# use runsauce to run a test on sauce!
 ./bin/runsauce.js
 ```
-
-### Tests
-
-Uh...

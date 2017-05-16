@@ -48,7 +48,11 @@
     "wd": "^0.3.11"
   },
   "scripts": {
-    "test": "echo 'lol'"
+    "test": "mocha test/"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.4.1",
+    "should": "^2.1.1"
+  }
 }
