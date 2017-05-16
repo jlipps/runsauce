@@ -51,7 +51,13 @@
     "test": "mocha test/"
   },
   "devDependencies": {
+    "babel-eslint": "^7.2.3",
     "chai": "^3.5.0",
+    "eslint": "^3.19.0",
+    "eslint-config-appium": "^2.0.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-mocha": "^4.9.0",
+    "eslint-plugin-promise": "^3.5.0",
     "mocha": "^3.4.1",
     "should": "^2.1.1"
   }
