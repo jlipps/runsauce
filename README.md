@@ -87,7 +87,6 @@ advance of running the test:
 
 * `connect`
 * `localname`
-* `selfsigned`
 
 Note that if running the `localname` test (which is a test of non-"localhost"
 local name proxying), you'll need to pass the `-l` or `--localname` option to
