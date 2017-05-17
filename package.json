@@ -33,19 +33,18 @@
     "test": "./test"
   },
   "dependencies": {
-    "asyncbox": "^1.0.6",
+    "asyncbox": "^2.3.1",
     "bluebird": "^3.5.0",
     "cli-table": "^0.3.1",
     "es6-mapify": "^1.0.0",
     "lodash": "^4.17.4",
     "logs-to-sumologic": "^1.0.2",
     "optimist": "~0.6.0",
-    "prompt": "~0.2.12",
+    "prompt": "^1.0.0",
     "request": "^2.53.0",
-    "saucelabs": "~0.1.1",
-    "should": "~2.1.1",
-    "stats-lite": "^1.0.3",
-    "wd": "^0.3.11"
+    "should": "^11.2.1",
+    "stats-lite": "^2.0.4",
+    "wd": "^1.2.0"
   },
   "scripts": {
     "test": "mocha test/"
