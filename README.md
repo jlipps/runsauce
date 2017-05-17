@@ -216,7 +216,7 @@ npm install
 npm test
 
 # configure runsauce, if you haven't already
-# ./bin/runsauce.js --config
+# ./bin/runsauce.js --setup
 
 # use runsauce to run a test on sauce!
 ./bin/runsauce.js
