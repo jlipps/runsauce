@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "asyncbox": "^1.0.6",
+    "bluebird": "^3.5.0",
     "cli-table": "^0.3.1",
     "es6-mapify": "^1.0.0",
     "lodash": "^3.3.1",
