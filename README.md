@@ -15,7 +15,7 @@ npm install -g runsauce
 # configure with your username / access key
 runsauce --setup
 
-# run a test with all the default options
+# run a basic test with all the default options
 runsauce
 
 # check out all the options
@@ -23,9 +23,13 @@ runsauce --help
 runsauce --tests
 runsauce --shortcuts
 
+# run a test with some custom options, like a guinea pig page test on chrome on
+# linux
+runsauce -t web_guinea -b c -p l
+
 # do something craaazy, like run a test against a self-signed https cert
-# on a dev server in Mac OS X 10.9 with Safari 7, doing this 10 times with
-# 5 parallel tasks
+# on a custom dev server (assuming you have the config set) in Mac OS X 10.9
+# with Safari 7, doing this 10 times with a concurrency of 5 tests at a time
 runsauce -c dev -t selfsigned -p m9 -b s -v 7 -r 10 -n 5
 ```
 
