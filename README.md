@@ -7,14 +7,30 @@ options.
 This is probably mostly useful for people who work at
 [Sauce](https://github.com/saucelabs).
 
-## Basic Usage
+## Requirements
+
+RunSauce requires Node.js version 7.6 or greater, and NPM.
+
+## Install
 
 ```bash
 npm install -g runsauce
+```
 
+## Configure
+
+RunSauce needs to know your Sauce credentials before it can do anything useful.
+There's a handy interactive setup that will pre-populate a config file from
+your environment variables if it can.
+
+```bash
 # configure with your username / access key
 runsauce --setup
+```
 
+## Basic Usage
+
+```bash
 # run a basic test with all the default options
 runsauce
 
