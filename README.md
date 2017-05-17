@@ -74,6 +74,12 @@ and `"d"` instead of `"device"` and so on).
 
 For a working example, see `demo-build.json`, included in this repo.
 
+## Additional server configs
+
+If you run with `--setup` after the initial setup, you will be given the
+ability to add servers to your config file. This can be useful for targeting
+dev environments or even local environments.
+
 ## Runsauce as a library
 
 You can also build apps on top of runsauce. An example of this is in
