@@ -41,7 +41,6 @@
     "logs-to-sumologic": "^1.0.2",
     "optimist": "~0.6.0",
     "prompt": "~0.2.12",
-    "q": "^1.2.0",
     "request": "^2.53.0",
     "saucelabs": "~0.1.1",
     "should": "~2.1.1",
