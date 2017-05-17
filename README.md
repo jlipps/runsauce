@@ -80,6 +80,19 @@ If you run with `--setup` after the initial setup, you will be given the
 ability to add servers to your config file. This can be useful for targeting
 dev environments or even local environments.
 
+## Sauce Connect-based tests
+
+Some tests require you to start the Sauce Connect Proxy on your system in
+advance of running the test:
+
+* `connect`
+* `localname`
+* `selfsigned`
+
+Note that if running the `localname` test (which is a test of non-"localhost"
+local name proxying), you'll need to pass the `-l` or `--localname` option to
+runsauce with the 'interesting' local name (e.g., `-l MyComputer.local`)
+
 ## Runsauce as a library
 
 You can also build apps on top of runsauce. An example of this is in
