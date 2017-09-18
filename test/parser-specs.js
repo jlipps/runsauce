@@ -8,6 +8,7 @@ describe('parser', () => {
     it('should convert shortcuts in args to actual values', () => {
       mapArgs({b: 's'}).should.eql({browser: 'Safari'});
       mapArgs({p: 'm9'}).should.eql({platform: 'Mac 10.9'});
+      mapArgs({o: 'l'}).should.eql({orientation: 'landscape'});
     });
     it('should convert shortcuts for the whole arg set', () => {
       mapArgs({b: 's', p: 'm9'}).should.eql({browser: 'Safari', platform: 'Mac 10.9'});
