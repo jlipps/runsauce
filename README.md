@@ -239,3 +239,15 @@ npm test
 # use runsauce to run a test on sauce!
 ./bin/runsauce.js
 ```
+
+# Containerized runsauce
+
+* Build
+```bash
+docker build -t runsauce . --no-cache
+```
+
+* Run
+```bash
+docker run -e SAUCE_USERNAME=<sauce_username> -e SAUCE_ACCESS_KEY=<sauce_access_key> --rm -it runsauce -t web -v 11.2 -a 1.8.1 -d "iPhone Simulator"
+```
