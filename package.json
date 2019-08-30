@@ -36,29 +36,24 @@
     "asyncbox": "^2.3.1",
     "bluebird": "^3.5.0",
     "cli-table": "^0.3.1",
-    "es6-mapify": "^1.0.0",
     "lodash": "^4.17.4",
     "logs-to-sumologic": "^1.0.2",
     "optimist": "~0.6.0",
     "prompt": "^1.0.0",
-    "request": "^2.53.0",
-    "should": "^11.2.1",
+    "should": "^13.2.3",
     "stats-lite": "^2.0.4",
     "wd": "^1.2.0"
   },
   "scripts": {
-    "test": "mocha test/"
+    "test": "mocha test/",
+    "clean": "rm -rf node_modules && rm -f package-lock.json && npm install",
+    "eslint": "eslint **/*.js"
   },
   "devDependencies": {
-    "babel-eslint": "^7.2.3",
-    "chai": "^3.5.0",
-    "eslint": "^3.19.0",
-    "eslint-config-appium": "^2.0.1",
-    "eslint-plugin-import": "^2.2.0",
-    "eslint-plugin-mocha": "^4.9.0",
-    "eslint-plugin-promise": "^3.5.0",
-    "gulp": "^3.9.1",
-    "mocha": "^3.4.1",
-    "should": "^2.1.1"
+    "babel-eslint": "^10.0.3",
+    "chai": "^4.2.0",
+    "eslint": "^6.2.2",
+    "eslint-config-appium": "^4.2.0",
+    "mocha": "^6.2.0"
   }
 }
