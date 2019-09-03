@@ -44,7 +44,7 @@
     "request": "^2.53.0",
     "should": "^11.2.1",
     "stats-lite": "^2.0.4",
-    "wd": "^1.2.0"
+    "wd": "^1.11.4"
   },
   "scripts": {
     "test": "mocha test/"
