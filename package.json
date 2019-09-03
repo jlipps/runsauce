@@ -42,6 +42,7 @@
     "optimist": "~0.6.0",
     "prompt": "^1.0.0",
     "request": "^2.53.0",
+    "request-promise": "^4.2.4",
     "should": "^11.2.1",
     "stats-lite": "^2.0.4",
     "wd": "^1.11.4"
