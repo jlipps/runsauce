@@ -14,8 +14,10 @@ RunSauce requires Node.js version 7.6 or greater, and NPM.
 ## Install
 
 ```bash
-npm install -g runsauce
+npm install -g runsauce2 
 ```
+
+(note that it's `runsauce2` because this is a fork of the original [runsauce](https://github.com/jlipps/runsauce))
 
 ## Configure
 
