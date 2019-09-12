@@ -4,3 +4,4 @@ node_modules
 appium*.json
 sauce*.json
 all-tests.json
+.DS_Store
